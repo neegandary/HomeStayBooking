@@ -45,21 +45,21 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         isClearable
         inline
         monthsShown={2}
-        className="rounded-xl border border-gray-100 shadow-sm"
-        calendarClassName="!border-none !font-sans"
+        className="rounded-3xl border-none shadow-none"
+        calendarClassName="!border-none !font-sans !bg-transparent"
         dayClassName={(date) =>
-          isBefore(date, startOfDay(new Date())) ? "text-gray-300" : "text-gray-700 hover:bg-zinc-100 rounded-full"
+          isBefore(date, startOfDay(new Date())) ? "text-primary/10" : "text-primary font-bold hover:bg-primary/5 rounded-xl transition-colors"
         }
       />
-      <div className="flex justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
+      <div className="flex justify-between p-6 bg-primary/5 rounded-2xl border border-primary/5 mt-4">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Check-in</span>
-          <span className="text-sm font-bold text-gray-900">{checkIn || 'Select date'}</span>
+          <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-1">Check-in</span>
+          <span className="text-sm font-black text-primary">{checkIn || 'Select date'}</span>
         </div>
-        <div className="w-px h-8 bg-gray-200 mx-4" />
+        <div className="w-px h-10 bg-primary/10 mx-6" />
         <div className="flex flex-col text-right">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Check-out</span>
-          <span className="text-sm font-bold text-gray-900">{checkOut || 'Select date'}</span>
+          <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-1">Check-out</span>
+          <span className="text-sm font-black text-primary">{checkOut || 'Select date'}</span>
         </div>
       </div>
     </div>

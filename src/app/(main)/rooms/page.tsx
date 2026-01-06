@@ -37,33 +37,33 @@ function RoomsContent() {
   }, [searchParams]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-white min-h-screen">
       {/* Search Bar Header */}
-      <div className="bg-white border-b border-gray-100 py-8 px-4">
+      <div className="bg-white border-b border-primary/5 py-12 px-4 shadow-xl shadow-primary/5">
         <div className="container mx-auto">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-6 text-center">
-            Find your next adventure
+          <h1 className="text-3xl md:text-5xl font-black text-primary mb-8 text-center tracking-tight uppercase">
+            Find your next <br /> adventure
           </h1>
           <SearchBar />
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar */}
-          <div className="w-full lg:w-72 flex-shrink-0">
-            <FilterSidebar className="sticky top-24" />
+          <div className="w-full lg:w-80 flex-shrink-0">
+            <FilterSidebar className="sticky top-28" />
           </div>
 
           {/* Room List */}
           <div className="flex-1">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-bold text-gray-900">
-                Available Rooms <span className="text-gray-400 font-normal text-sm ml-2">({filteredRooms.length} found)</span>
+            <div className="flex justify-between items-end mb-8 border-b border-primary/5 pb-6">
+              <h2 className="text-xl font-black text-primary uppercase tracking-widest">
+                Available Rooms <span className="text-primary/20 font-black text-sm ml-3">/ {filteredRooms.length} found</span>
               </h2>
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-500 font-medium">Sort by:</span>
-                <select className="text-xs font-bold bg-transparent focus:outline-none cursor-pointer">
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">Sort by:</span>
+                <select className="text-[10px] font-black uppercase tracking-widest bg-transparent focus:outline-none cursor-pointer text-primary">
                   <option>Recommended</option>
                   <option>Price: Low to High</option>
                   <option>Price: High to Low</option>
@@ -82,8 +82,8 @@ function RoomsContent() {
 export default function RoomsPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-primary/5">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     }>
       <RoomsContent />

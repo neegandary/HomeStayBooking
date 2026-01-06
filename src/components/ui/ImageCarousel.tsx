@@ -1,7 +1,9 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -23,12 +25,28 @@ export function ImageCarousel({
   showNavigation = true,
   showPagination = true
 }: ImageCarouselProps) {
+  const [swiper, setSwiper] = useState<SwiperType | null>(null);
+
+  useEffect(() => {
+    if (swiper && swiper.autoplay) {
+      if (autoplay) {
+        swiper.autoplay.start();
+      } else {
+        swiper.autoplay.stop();
+      }
+    }
+  }, [autoplay, swiper]);
+
   return (
     <Swiper
       modules={[Navigation, Pagination, Autoplay]}
       navigation={showNavigation}
       pagination={showPagination ? { clickable: true } : false}
-      autoplay={autoplay ? { delay: 5000, disableOnInteraction: false } : false}
+      autoplay={{
+        delay: 2500,
+        disableOnInteraction: false,
+      }}
+      onSwiper={setSwiper}
       className={`w-full h-full ${className}`}
     >
       {images.map((src, i) => (

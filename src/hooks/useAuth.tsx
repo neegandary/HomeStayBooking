@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data } = await api.get('/auth/me');
       setState({ user: data.user, isLoading: false, isAuthenticated: true });
       localStorage.setItem('user', JSON.stringify(data.user));
-    } catch (error) {
+    } catch (err) {
       // Interceptor handles refresh, if it fails, we end up here or it redirects
       setState({ user: null, isLoading: false, isAuthenticated: false });
     }

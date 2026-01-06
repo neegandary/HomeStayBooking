@@ -45,21 +45,21 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
   };
 
   return (
-    <aside className={`bg-white rounded-xl border border-gray-100 p-6 h-fit ${className}`}>
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="font-bold text-gray-900">Filters</h3>
+    <aside className={`bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5 h-fit ${className}`}>
+      <div className="flex justify-between items-center mb-8">
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">Filters</h3>
         <button
           onClick={handleClearAll}
-          className="text-xs text-gray-500 hover:text-zinc-900 transition-colors"
+          className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-action transition-colors"
         >
           Clear All
         </button>
       </div>
 
       {/* Price Range */}
-      <div className="mb-8">
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Max Price</h4>
-        <div className="space-y-4">
+      <div className="mb-10">
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Max Price</h4>
+        <div className="space-y-6">
           <input
             type="range"
             min="0"
@@ -67,29 +67,33 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
             step="50"
             value={currentPrice}
             onChange={(e) => updateFilters('maxPrice', e.target.value)}
-            className="w-full accent-zinc-900"
+            className="w-full h-1.5 bg-primary/5 rounded-lg appearance-none cursor-pointer accent-action"
           />
-          <div className="flex justify-between text-xs text-gray-500 font-bold">
-            <span>$0</span>
-            <span className="text-zinc-900 text-sm">${currentPrice}</span>
-            <span>$1000+</span>
+          <div className="flex justify-between items-center">
+            <span className="text-[10px] font-black text-primary/20">$0</span>
+            <div className="bg-primary/5 px-3 py-1 rounded-lg">
+              <span className="text-primary font-black text-sm">${currentPrice}</span>
+            </div>
+            <span className="text-[10px] font-black text-primary/20">$1000+</span>
           </div>
         </div>
       </div>
 
       {/* Amenities */}
-      <div className="mb-8">
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Amenities</h4>
-        <div className="space-y-3">
+      <div className="mb-10">
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Amenities</h4>
+        <div className="space-y-4">
           {amenities.map((amenity) => (
             <label key={amenity} className="flex items-center group cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedAmenities.includes(amenity)}
-                onChange={() => toggleAmenity(amenity)}
-                className="w-4 h-4 rounded border-gray-300 text-zinc-900 focus:ring-zinc-900 accent-zinc-900 cursor-pointer"
-              />
-              <span className="ml-3 text-sm text-gray-600 group-hover:text-gray-900 transition-colors">
+              <div className="relative flex items-center justify-center">
+                <input
+                  type="checkbox"
+                  checked={selectedAmenities.includes(amenity)}
+                  onChange={() => toggleAmenity(amenity)}
+                  className="w-5 h-5 rounded-lg border-2 border-primary/10 text-primary focus:ring-primary/20 accent-primary cursor-pointer transition-all"
+                />
+              </div>
+              <span className="ml-4 text-xs font-bold text-primary/60 group-hover:text-primary transition-colors">
                 {amenity}
               </span>
             </label>
@@ -99,16 +103,16 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
 
       {/* Capacity */}
       <div>
-        <h4 className="text-sm font-semibold text-gray-900 mb-4">Min. Capacity</h4>
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Min. Capacity</h4>
         <div className="grid grid-cols-4 gap-2">
           {[1, 2, 4, 6].map((num) => (
             <button
               key={num}
               onClick={() => updateFilters('guests', num.toString())}
-              className={`py-2 text-xs border rounded-md transition-all font-medium ${
+              className={`py-2.5 text-[10px] font-black border-2 rounded-xl transition-all ${
                 currentCapacity === num.toString()
-                  ? 'border-zinc-900 bg-zinc-900 text-white'
-                  : 'border-gray-200 text-gray-700 hover:border-zinc-900 hover:bg-zinc-50'
+                  ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'border-primary/5 text-primary/40 hover:border-primary/20 hover:bg-primary/5'
               }`}
             >
               {num}+

@@ -54,35 +54,35 @@ export default function BookPage({ params }: BookPageProps) {
 
   if (authLoading || !isAuthenticated || !room) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-zinc-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-primary/5">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-20">
-      <div className="bg-white border-b border-gray-100 py-12 px-4">
+    <div className="bg-primary/5 min-h-screen pb-32">
+      <div className="bg-white border-b border-primary/5 py-16 px-4 shadow-xl shadow-primary/5">
         <div className="container mx-auto max-w-5xl">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-2 text-gray-500 hover:text-zinc-900 transition-colors mb-6 group"
+            className="flex items-center gap-3 text-primary/40 hover:text-action transition-colors mb-8 group uppercase text-[10px] font-black tracking-widest"
           >
             <svg className="w-5 h-5 transition-transform group-hover:-translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            <span className="text-sm font-bold">Back to room</span>
+            <span>Back to room</span>
           </button>
-          <h1 className="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">
-            Confirm your booking
+          <h1 className="text-4xl md:text-6xl font-black text-primary tracking-tight uppercase">
+            Confirm your <br className="hidden md:block" /> booking
           </h1>
-          <p className="text-gray-500 font-medium mt-2">
-            You are booking: <span className="text-zinc-900 font-bold">{room.name}</span>
+          <p className="text-primary/50 font-medium mt-6 text-lg">
+            You are booking: <span className="text-primary font-black uppercase tracking-tight">{room.name}</span>
           </p>
         </div>
       </div>
 
-      <div className="container mx-auto max-w-5xl px-4 mt-12">
+      <div className="container mx-auto max-w-5xl px-4 mt-16">
         <BookingForm
           room={room}
           onSubmit={handleBookingSubmit}

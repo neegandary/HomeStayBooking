@@ -1,13 +1,32 @@
 @import "tailwindcss";
 
 :root {
+  --sky-blue: #8ecae6;
+  --blue-green: #219ebc;
+  --deep-space: #023047;
+  --amber-flame: #ffb703;
+  --tiger-orange: #fb8500;
+
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: var(--deep-space);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-sky-blue: var(--sky-blue);
+  --color-blue-green: var(--blue-green);
+  --color-deep-space: var(--deep-space);
+  --color-amber-flame: var(--amber-flame);
+  --color-tiger-orange: var(--tiger-orange);
+
+  /* Semantic Aliases */
+  --color-primary: var(--deep-space);
+  --color-secondary: var(--blue-green);
+  --color-accent: var(--sky-blue);
+  --color-highlight: var(--amber-flame);
+  --color-action: var(--tiger-orange);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }

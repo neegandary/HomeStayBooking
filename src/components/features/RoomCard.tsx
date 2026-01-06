@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { Room } from '@/types/room';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
@@ -8,56 +10,72 @@ interface RoomCardProps {
 }
 
 const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden transition-transform hover:scale-[1.02] border border-gray-100 flex flex-col h-full">
+    <div
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="bg-white rounded-2xl shadow-xl shadow-primary/5 overflow-hidden transition-all hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 border border-primary/5 flex flex-col h-full group relative focus-within:ring-2 focus-within:ring-secondary/50"
+    >
       {/* Thumbnail Carousel */}
-      <div className="h-48 md:h-56 relative">
+      <div className="h-56 md:h-64 relative overflow-hidden group/carousel">
         <ImageCarousel
           images={room.images}
-          autoplay={false}
+          autoplay={isHovered}
           showPagination={true}
           showNavigation={false}
-          className="h-full"
+          className="h-full transition-transform duration-500 group-hover:scale-110 [&_.swiper-pagination]:z-30 [&_.swiper-pagination]:relative"
         />
-        <div className="absolute top-3 right-3 z-10 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-md text-xs font-semibold text-gray-800 shadow-sm">
+        <div className="absolute top-4 right-4 z-10 bg-primary/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-black/10">
           {room.capacity} Guests
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 flex flex-col flex-1">
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="text-lg font-bold text-gray-900 line-clamp-1">{room.name}</h3>
-          <span className="text-primary font-bold text-lg">${room.price}<span className="text-gray-500 text-sm font-normal">/night</span></span>
+      <div className="p-6 flex flex-col flex-1">
+        <div className="flex justify-between items-start mb-3">
+          <h3 className="text-xl font-black text-primary tracking-tight line-clamp-1 group-hover:text-secondary transition-colors">
+            <Link href={`/rooms/${room.id}`} className="after:absolute after:inset-0 after:z-20">
+              {room.name}
+            </Link>
+          </h3>
         </div>
 
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2 flex-1">
+        <div className="mb-4">
+          <span className="text-secondary font-black text-2xl">${room.price}</span>
+          <span className="text-primary/40 text-xs font-bold uppercase tracking-widest ml-2">/ night</span>
+        </div>
+
+        <p className="text-primary/60 text-sm mb-6 line-clamp-2 flex-1 leading-relaxed">
           {room.description}
         </p>
 
         {/* Amenities */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-6">
           {room.amenities.slice(0, 3).map((amenity) => (
-            <span key={amenity} className="bg-gray-100 text-gray-600 text-[10px] px-2 py-1 rounded-full uppercase tracking-wider font-medium">
+            <span key={amenity} className="bg-primary/5 text-primary/60 text-[9px] px-2.5 py-1 rounded-lg uppercase tracking-widest font-black border border-primary/5">
               {amenity}
             </span>
           ))}
           {room.amenities.length > 3 && (
-            <span className="text-gray-400 text-[10px] py-1">+{room.amenities.length - 3} more</span>
+            <span className="text-primary/30 text-[9px] font-black uppercase tracking-widest py-1">+{room.amenities.length - 3} more</span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-auto">
+        <div className="flex gap-3 mt-auto relative z-30">
           <Link
             href={`/rooms/${room.id}`}
-            className="flex-1 text-center py-2 px-4 rounded-lg border border-gray-300 text-gray-700 font-medium text-sm hover:bg-gray-50 transition-colors"
+            tabIndex={-1}
+            aria-hidden="true"
+            className="flex-1 text-center py-3 px-4 rounded-xl border-2 border-primary/10 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-[0.98]"
           >
             Details
           </Link>
           <Link
             href={`/rooms/${room.id}/book`}
-            className="flex-1 text-center py-2 px-4 rounded-lg bg-zinc-900 text-white font-medium text-sm hover:bg-zinc-800 transition-colors"
+            className="flex-1 text-center py-3 px-4 rounded-xl bg-action text-white font-black text-xs uppercase tracking-widest hover:bg-tiger-orange transition-all shadow-lg shadow-action/20 active:scale-[0.98]"
           >
             Book Now
           </Link>
