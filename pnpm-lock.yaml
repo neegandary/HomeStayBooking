@@ -53,6 +53,9 @@ importers:
       swiper:
         specifier: ^12.0.3
         version: 12.0.3
+      zod:
+        specifier: ^4.3.5
+        version: 4.3.5
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3
@@ -2025,6 +2028,9 @@ packages:
   yocto-queue@0.1.0:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
+
+  zod@4.3.5:
+    resolution: {integrity: sha512-k7Nwx6vuWx1IJ9Bjuf4Zt1PEllcwe7cls3VNzm4CQ1/hgtFUK2bRNG3rvnpPUhFjmqJKAKtjV576KnUkHocg/g==}
 
 snapshots:
 
@@ -4148,3 +4154,5 @@ snapshots:
   word-wrap@1.2.5: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@4.3.5: {}

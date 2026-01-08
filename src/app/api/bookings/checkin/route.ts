@@ -1,14 +1,22 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Booking from '@/models/Booking';
+import { checkinSchema } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
-    const { bookingId, roomId } = await request.json();
-
-    if (!bookingId) {
-      return NextResponse.json({ error: 'Booking ID is required' }, { status: 400 });
+    const body = await request.json();
+    
+    // Validate input with Zod
+    const validation = checkinSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.flatten() },
+        { status: 400 }
+      );
     }
+    
+    const { bookingId, roomId } = validation.data;
 
     await connectDB();
     const booking = await Booking.findById(bookingId);

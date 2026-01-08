@@ -3,14 +3,38 @@ import connectDB from '@/lib/db/mongodb';
 import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { generateTokens } from '@/lib/auth';
+import { rateLimiters, getClientIP } from '@/lib/ratelimit';
+import { registerSchema } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
-    const { email, password, name } = await request.json();
+    // Rate limiting: 3 accounts per hour per IP
+    const ip = getClientIP(request);
+    const rateLimit = rateLimiters.register(ip);
 
-    if (!email || !password || !name) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!rateLimit.success) {
+      const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+      return NextResponse.json(
+        { error: 'Too many registration attempts. Please try again later.' },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(retryAfter) }
+        }
+      );
     }
+
+    const body = await request.json();
+    
+    // Validate input with Zod
+    const validation = registerSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.flatten() },
+        { status: 400 }
+      );
+    }
+    
+    const { email, password, name } = validation.data;
 
     await connectDB();
 

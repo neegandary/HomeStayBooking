@@ -3,6 +3,7 @@ import connectDB from '@/lib/db/mongodb';
 import Booking from '@/models/Booking';
 import { sepay } from '@/lib/sepay';
 import { withAuth, isAuthenticated } from '@/lib/auth';
+import { createBookingSchema } from '@/lib/validations';
 import mongoose from 'mongoose';
 
 export async function GET(request: NextRequest) {
@@ -43,6 +44,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    
+    // Validate input with Zod
+    const validation = createBookingSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.flatten() },
+        { status: 400 }
+      );
+    }
+    
     await connectDB();
 
     // Check if roomId is a valid MongoDB ObjectId, if not generate a new one for mock data
