@@ -22,9 +22,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ user, onUpdate }) => {
     try {
       await onUpdate(formData);
       setIsEditing(false);
-    } catch (error) {
-      console.error('Failed to update profile:', error);
-      alert('Failed to update profile. Please try again.');
+    } catch {
+      // Error handled by parent component
     } finally {
       setIsLoading(false);
     }

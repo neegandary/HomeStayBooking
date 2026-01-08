@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { QRCodeSVG } from 'qrcode.react';
 import { bookingService } from '@/lib/bookingService';
 import { Booking } from '@/types/booking';
-import { mockRooms } from '@/constants/mockRooms';
 import { Room } from '@/types/room';
 
 interface ConfirmationPageProps {
@@ -22,8 +22,16 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
       try {
         const response = await bookingService.getById(id);
         setBooking(response.data);
-        const foundRoom = mockRooms.find(r => r.id === response.data.roomId);
-        if (foundRoom) setRoom(foundRoom);
+        
+        // Fetch room from API
+        // Fetch room from API if roomId exists
+        if (response.data.roomId) {
+          const roomResponse = await fetch(`/api/rooms/${response.data.roomId}`);
+          if (roomResponse.ok) {
+            const roomData = await roomResponse.json();
+            setRoom(roomData);
+          }
+        }
       } catch (error) {
         console.error('Failed to fetch booking:', error);
       } finally {
@@ -88,8 +96,41 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
             </div>
             <hr className="border-primary/5" />
             <div className="flex justify-between items-end">
-              <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em]">Total Paid</span>
-              <span className="text-3xl font-black text-primary tracking-tighter">${booking.totalPrice.toFixed(2)}</span>
+              <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em]">Total Amount</span>
+              <span className="text-3xl font-black text-primary tracking-tighter">{booking.totalPrice.toLocaleString('vi-VN')}đ</span>
+            </div>
+          </div>
+
+          {/* Check-in QR Code Section */}
+          <div className="bg-gradient-to-br from-secondary/5 to-action/5 rounded-3xl p-8 mb-12 border border-secondary/10">
+            <h3 className="text-lg font-black text-primary uppercase tracking-tight mb-2">Check-in QR Code</h3>
+            <p className="text-primary/40 text-xs font-medium mb-6">
+              Show this QR code to your host when you arrive for quick check-in
+            </p>
+            
+            <div className="flex justify-center mb-6">
+              <div className="bg-white p-4 rounded-2xl shadow-lg">
+                <QRCodeSVG
+                  value={JSON.stringify({
+                    type: 'CHECKIN',
+                    bookingId: booking.id,
+                    roomId: booking.roomId,
+                    checkIn: booking.checkIn,
+                    checkOut: booking.checkOut,
+                    guests: booking.guests,
+                  })}
+                  size={200}
+                  level="M"
+                  includeMargin={true}
+                />
+              </div>
+            </div>
+            
+            <div className="flex items-center justify-center gap-2 text-secondary">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              <span className="text-[10px] font-black uppercase tracking-widest">Scan with host&apos;s device</span>
             </div>
           </div>
 

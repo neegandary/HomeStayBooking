@@ -11,6 +11,7 @@ interface RoomCardProps {
 
 const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const roomId = room._id || room.id;
 
   return (
     <div
@@ -36,14 +37,14 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
       <div className="p-6 flex flex-col flex-1">
         <div className="flex justify-between items-start mb-3">
           <h3 className="text-xl font-black text-primary tracking-tight line-clamp-1 group-hover:text-secondary transition-colors">
-            <Link href={`/rooms/${room.id}`} className="after:absolute after:inset-0 after:z-20">
+            <Link href={`/rooms/${roomId}`} className="after:absolute after:inset-0 after:z-20">
               {room.name}
             </Link>
           </h3>
         </div>
 
         <div className="mb-4">
-          <span className="text-secondary font-black text-2xl">${room.price}</span>
+          <span className="text-secondary font-black text-2xl">{room.price.toLocaleString('vi-VN')}đ</span>
           <span className="text-primary/40 text-xs font-bold uppercase tracking-widest ml-2">/ night</span>
         </div>
 
@@ -66,7 +67,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
         {/* Actions */}
         <div className="flex gap-3 mt-auto relative z-30">
           <Link
-            href={`/rooms/${room.id}`}
+            href={`/rooms/${roomId}`}
             tabIndex={-1}
             aria-hidden="true"
             className="flex-1 text-center py-3 px-4 rounded-xl border-2 border-primary/10 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-[0.98]"
@@ -74,7 +75,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
             Details
           </Link>
           <Link
-            href={`/rooms/${room.id}/book`}
+            href={`/rooms/${roomId}/book`}
             className="flex-1 text-center py-3 px-4 rounded-xl bg-action text-white font-black text-xs uppercase tracking-widest hover:bg-tiger-orange transition-all shadow-lg shadow-action/20 active:scale-[0.98]"
           >
             Book Now

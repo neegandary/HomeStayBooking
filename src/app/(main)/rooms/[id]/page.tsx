@@ -1,16 +1,23 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { mockRooms } from '@/constants/mockRooms';
+import connectDB from '@/lib/db/mongodb';
+import Room from '@/models/Room';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
 
 interface RoomDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
+async function getRoom(id: string) {
+  await connectDB();
+  const room = await Room.findById(id).lean();
+  return room ? JSON.parse(JSON.stringify(room)) : null;
+}
+
 export async function generateMetadata({ params }: RoomDetailPageProps) {
   const { id } = await params;
-  const room = mockRooms.find((r) => r.id === id);
+  const room = await getRoom(id);
   return {
     title: room ? `${room.name} | StayEasy` : 'Room Not Found',
   };
@@ -18,7 +25,7 @@ export async function generateMetadata({ params }: RoomDetailPageProps) {
 
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   const { id } = await params;
-  const room = mockRooms.find((r) => r.id === id);
+  const room = await getRoom(id);
 
   if (!room) {
     notFound();
@@ -117,7 +124,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
             <section className="mb-16">
               <h2 className="text-2xl font-black text-primary mb-10 uppercase tracking-tight">What this place offers</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
-                {room.amenities.map((amenity) => (
+                {room.amenities.map((amenity: string) => (
                   <div key={amenity} className="flex items-center gap-4 text-primary group">
                     <div className="w-8 h-8 bg-primary/5 rounded-xl flex items-center justify-center text-secondary group-hover:bg-primary group-hover:text-white transition-all">
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -150,7 +157,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
             <div className="sticky top-28 bg-white border border-primary/5 rounded-[2.5rem] p-10 shadow-2xl shadow-primary/10">
               <div className="flex justify-between items-end mb-10">
                 <div>
-                  <span className="text-4xl font-black text-primary tracking-tighter">${room.price}</span>
+                  <span className="text-4xl font-black text-primary tracking-tighter">{room.price.toLocaleString('vi-VN')}đ</span>
                   <span className="text-primary/40 font-black uppercase tracking-widest text-[10px] ml-2">/ night</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm font-black text-primary bg-primary/5 px-3 py-1.5 rounded-xl">
@@ -163,7 +170,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
               <div className="space-y-6 mb-10">
                 <Link
-                  href={`/rooms/${room.id}/book`}
+                  href={`/rooms/${room._id}/book`}
                   className="block w-full text-center bg-action text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-tiger-orange transition-all shadow-xl shadow-action/30 active:scale-[0.98]"
                 >
                   Reserve Now
@@ -173,21 +180,21 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
               <div className="space-y-5">
                 <div className="flex justify-between text-primary/50 text-xs font-black uppercase tracking-widest">
-                  <span className="underline decoration-primary/10 underline-offset-8">${room.price} x 5 nights</span>
-                  <span className="text-primary">${room.price * 5}</span>
+                  <span className="underline decoration-primary/10 underline-offset-8">{room.price.toLocaleString('vi-VN')}đ x 5 nights</span>
+                  <span className="text-primary">{(room.price * 5).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between text-primary/50 text-xs font-black uppercase tracking-widest">
                   <span className="underline decoration-primary/10 underline-offset-8">Cleaning fee</span>
-                  <span className="text-primary">$35</span>
+                  <span className="text-primary">150.000đ</span>
                 </div>
                 <div className="flex justify-between text-primary/50 text-xs font-black uppercase tracking-widest">
                   <span className="underline decoration-primary/10 underline-offset-8">Service fee</span>
-                  <span className="text-primary">$42</span>
+                  <span className="text-primary">{(room.price * 5 * 0.05).toLocaleString('vi-VN')}đ</span>
                 </div>
                 <hr className="border-primary/5 my-8" />
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black text-primary/20 uppercase tracking-[0.2em]">Total</span>
-                  <span className="text-3xl font-black text-primary tracking-tighter">${room.price * 5 + 77}</span>
+                  <span className="text-3xl font-black text-primary tracking-tighter">{(room.price * 5 + 150000 + (room.price * 5 * 0.05)).toLocaleString('vi-VN')}đ</span>
                 </div>
               </div>
             </div>

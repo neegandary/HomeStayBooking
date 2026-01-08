@@ -11,6 +11,15 @@ const DashboardSidebar = () => {
 
   const navItems = [
     {
+      name: 'Back to Home',
+      href: '/',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+        </svg>
+      ),
+    },
+    {
       name: 'My Bookings',
       href: '/dashboard',
       icon: (
@@ -42,7 +51,7 @@ const DashboardSidebar = () => {
               {user?.name || 'User'}
             </h2>
             <p className="text-[10px] text-primary/40 font-black uppercase tracking-widest mt-0.5">
-              Guest Member
+              {user?.role === 'admin' ? 'Administrator' : 'Guest Member'}
             </p>
           </div>
         </div>

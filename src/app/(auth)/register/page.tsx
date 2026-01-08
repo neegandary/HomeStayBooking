@@ -19,7 +19,7 @@ function RegisterForm() {
 
     try {
       await register({ name, email, password });
-      window.location.href = '/dashboard';
+      // Redirect is handled by the register function in useAuth
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
       setError(error.response?.data?.error || 'Failed to create account. Please try again.');

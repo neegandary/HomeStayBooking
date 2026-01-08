@@ -19,8 +19,8 @@ export function useBookingPrice(
   }, [checkIn, checkOut]);
 
   const subtotal = nights * pricePerNight;
-  const cleaningFee = 35;
-  const serviceFee = subtotal * 0.1; // 10% fee
+  const cleaningFee = 150000; // 150,000 VND
+  const serviceFee = subtotal * 0.05; // 5% fee
   const total = subtotal + cleaningFee + serviceFee;
 
   return {

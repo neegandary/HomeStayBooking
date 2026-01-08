@@ -9,8 +9,8 @@ const api = axios.create({
 // Request interceptor - attach access token
 api.interceptors.request.use((config) => {
   const token = Cookies.get('accessToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+  if (token && token.trim()) {
+    config.headers.Authorization = `Bearer ${token.trim()}`;
   }
   return config;
 });
@@ -24,10 +24,10 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refreshToken = Cookies.get('refreshToken');
-        if (!refreshToken) throw new Error('No refresh token');
+        if (!refreshToken || !refreshToken.trim()) throw new Error('No refresh token');
 
         // Using standard axios here to avoid infinite loop if this refresh also fails
-        const { data } = await axios.post('/api/auth/refresh', { refreshToken });
+        const { data } = await axios.post('/api/auth/refresh', { refreshToken: refreshToken.trim() });
 
         Cookies.set('accessToken', data.accessToken);
         originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;

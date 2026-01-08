@@ -10,6 +10,7 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
+  setUser: (user: AuthState['user']) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -41,7 +42,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const { data } = await api.get('/auth/me');
       setState({ user: data.user, isLoading: false, isAuthenticated: true });
       localStorage.setItem('user', JSON.stringify(data.user));
-    } catch (err) {
+    } catch {
       // Interceptor handles refresh, if it fails, we end up here or it redirects
       setState({ user: null, isLoading: false, isAuthenticated: false });
     }
@@ -66,7 +67,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       Cookies.set('refreshToken', data.refreshToken);
       localStorage.setItem('user', JSON.stringify(data.user));
       setState({ user: data.user, isLoading: false, isAuthenticated: true });
-      router.push('/dashboard');
+      // Redirect based on user role
+      if (data.user.role === 'admin') {
+        router.push('/admin');
+      } else {
+        router.push('/dashboard');
+      }
     } catch (error) {
       throw error;
     }
@@ -85,8 +91,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const setUser = useCallback((user: AuthState['user']) => {
+    if (user) {
+      localStorage.setItem('user', JSON.stringify(user));
+      setState(prev => ({ ...prev, user }));
+    }
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ ...state, login, register, logout }}>
+    <AuthContext.Provider value={{ ...state, login, register, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

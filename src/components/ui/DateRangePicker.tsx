@@ -34,7 +34,34 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
   };
 
   return (
-    <div className="flex flex-col space-y-2">
+    <div className="flex flex-col space-y-2 w-full">
+      <style jsx global>{`
+        .react-datepicker {
+          display: flex !important;
+          flex-direction: row !important;
+          width: 100% !important;
+          justify-content: center !important;
+          gap: 0.5rem;
+        }
+        .react-datepicker__month-container {
+          float: none !important;
+          flex: 0 1 auto !important;
+        }
+        .react-datepicker__day-name,
+        .react-datepicker__day {
+          width: 2rem !important;
+          line-height: 2rem !important;
+          margin: 0.1rem !important;
+        }
+        .react-datepicker__current-month {
+          font-size: 0.9rem !important;
+        }
+        @media (max-width: 500px) {
+          .react-datepicker {
+            flex-direction: column !important;
+          }
+        }
+      `}</style>
       <DatePicker
         selectsRange
         startDate={startDate}

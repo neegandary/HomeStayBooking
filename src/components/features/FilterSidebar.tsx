@@ -12,7 +12,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
   const searchParams = useSearchParams();
   const amenities = ['Wifi', 'AC', 'Kitchen', 'Breakfast', 'Private Pool', 'Ocean View', 'Mountain View', 'City View'];
 
-  const currentPrice = searchParams.get('maxPrice') || '1000';
+  const currentPrice = searchParams.get('maxPrice') || '20000000';
   const selectedAmenities = searchParams.getAll('amenities');
   const currentCapacity = searchParams.get('guests') || '';
 
@@ -63,18 +63,18 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
           <input
             type="range"
             min="0"
-            max="1000"
-            step="50"
+            max="20000000"
+            step="500000"
             value={currentPrice}
             onChange={(e) => updateFilters('maxPrice', e.target.value)}
             className="w-full h-1.5 bg-primary/5 rounded-lg appearance-none cursor-pointer accent-action"
           />
           <div className="flex justify-between items-center">
-            <span className="text-[10px] font-black text-primary/20">$0</span>
+            <span className="text-[10px] font-black text-primary/20">0đ</span>
             <div className="bg-primary/5 px-3 py-1 rounded-lg">
-              <span className="text-primary font-black text-sm">${currentPrice}</span>
+              <span className="text-primary font-black text-sm">{parseInt(currentPrice).toLocaleString('vi-VN')}đ</span>
             </div>
-            <span className="text-[10px] font-black text-primary/20">$1000+</span>
+            <span className="text-[10px] font-black text-primary/20">20M+</span>
           </div>
         </div>
       </div>

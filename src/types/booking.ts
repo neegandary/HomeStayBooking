@@ -1,13 +1,17 @@
+import { PaymentInfo } from './payment';
 export interface Booking {
   id: string;
   roomId: string;
   userId: string;
+  guestName?: string;
   checkIn: string;     // ISO date
   checkOut: string;    // ISO date
   guests: number;
   totalPrice: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'checked-in' | 'completed' | 'cancelled';
+  checkedInAt?: string;
   createdAt: string;
+  paymentInfo?: PaymentInfo;
 }
 
 export interface BookingFormData {
@@ -19,4 +23,5 @@ export interface BookingFormData {
   guestEmail: string;
   guestPhone: string;
   specialRequests?: string;
+  totalPrice?: number;
 }

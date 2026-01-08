@@ -1,21 +1,28 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import ProfileForm from '@/components/features/ProfileForm';
 import api from '@/lib/axios';
 import { User } from '@/types/auth';
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
+  const [updateStatus, setUpdateStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
   const handleUpdateProfile = async (data: Partial<User>) => {
     try {
-      await api.patch('/user/profile', data);
-      // In a real app, you would update the local auth context user here
-      alert('Profile updated successfully! (Mock update)');
+      const response = await api.patch('/user/profile', data);
+      // Update local auth context with new user data
+      if (setUser && response.data) {
+        setUser(response.data);
+      }
+      setUpdateStatus('success');
+      setTimeout(() => setUpdateStatus('idle'), 3000);
     } catch (error) {
       console.error('Failed to update profile:', error);
+      setUpdateStatus('error');
+      setTimeout(() => setUpdateStatus('idle'), 3000);
       throw error;
     }
   };
@@ -29,57 +36,72 @@ export default function ProfilePage() {
           Profile Settings
         </h1>
         <p className="text-primary/50 font-medium mt-1">
-          Manage your account information and preferences.
+          Manage your account information.
         </p>
       </div>
+
+      {/* Status Messages */}
+      {updateStatus === 'success' && (
+        <div className="bg-secondary/10 border border-secondary/20 rounded-2xl p-4 flex items-center gap-3">
+          <svg className="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+          </svg>
+          <span className="text-sm font-bold text-secondary">Profile updated successfully!</span>
+        </div>
+      )}
+
+      {updateStatus === 'error' && (
+        <div className="bg-red-50 border border-red-200 rounded-2xl p-4 flex items-center gap-3">
+          <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          <span className="text-sm font-bold text-red-500">Failed to update profile. Please try again.</span>
+        </div>
+      )}
 
       <ProfileForm user={user} onUpdate={handleUpdateProfile} />
 
-      {/* Security Section */}
+      {/* Account Info Section */}
       <div className="bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5">
-        <h2 className="text-xl font-black text-primary tracking-tight mb-8">Security</h2>
-        <div className="space-y-6">
+        <h2 className="text-xl font-black text-primary tracking-tight mb-6">Account Information</h2>
+        <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-black text-primary">Password</p>
-                <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest mt-0.5">Last changed 3 months ago</p>
+                <p className="text-sm font-black text-primary">Role</p>
+                <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest mt-0.5">
+                  {user.role === 'admin' ? 'Administrator' : 'User'}
+                </p>
               </div>
             </div>
-            <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-action transition-colors">Change Password</button>
+            <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
+              user.role === 'admin'
+                ? 'bg-action/10 text-action'
+                : 'bg-secondary/10 text-secondary'
+            }`}>
+              {user.role}
+            </span>
           </div>
 
           <div className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-primary shadow-sm">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A10.003 10.003 0 0012 20a10.003 10.003 0 006.235-2.397l.054.09a10.003 10.003 0 006.235-2.397l.054.09c.075.121.15.243.226.365C17.991 17.799 17 14.517 17 11V7a2 2 0 00-2-2H9a2 2 0 00-2 2v4c0 1.25-.25 2.441-.705 3.528M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-black text-primary">Two-Factor Authentication</p>
-                <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest mt-0.5">Add an extra layer of security</p>
+                <p className="text-sm font-black text-primary">Email</p>
+                <p className="text-xs text-primary/60 font-medium mt-0.5">{user.email}</p>
               </div>
             </div>
-            <button className="text-[10px] font-black uppercase tracking-widest text-primary hover:text-action transition-colors">Enable</button>
           </div>
         </div>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="bg-primary/5 rounded-3xl border border-primary/10 p-8 shadow-sm">
-        <h2 className="text-xl font-black text-primary tracking-tight mb-4 uppercase">Advanced Settings</h2>
-        <p className="text-sm text-primary/50 font-medium mb-8">
-          Once you delete your account, there is no going back. Please be certain.
-        </p>
-        <button className="bg-primary/10 text-primary px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all active:scale-[0.98] shadow-sm">
-          Delete Account
-        </button>
       </div>
     </div>
   );

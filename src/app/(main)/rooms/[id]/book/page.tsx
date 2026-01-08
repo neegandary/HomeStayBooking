@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { mockRooms } from '@/constants/mockRooms';
 import { Room } from '@/types/room';
 import BookingForm from '@/components/features/BookingForm';
 import { BookingFormData } from '@/types/booking';
@@ -22,15 +21,23 @@ export default function BookPage({ params }: BookPageProps) {
   const [bookedDates, setBookedDates] = useState<string[]>([]);
 
   useEffect(() => {
-    const foundRoom = mockRooms.find(r => r.id === id);
-    if (foundRoom) {
-      setRoom(foundRoom);
-      bookingService.getAvailability(id).then(res => {
-        setBookedDates(res.data.bookedDates);
-      });
-    } else {
-      router.push('/rooms');
-    }
+    const fetchRoom = async () => {
+      try {
+        const response = await fetch(`/api/rooms/${id}`);
+        if (response.ok) {
+          const roomData = await response.json();
+          setRoom(roomData);
+          const availRes = await bookingService.getAvailability(id);
+          setBookedDates(availRes.data.bookedDates);
+        } else {
+          router.push('/rooms');
+        }
+      } catch (error) {
+        console.error('Error fetching room:', error);
+        router.push('/rooms');
+      }
+    };
+    fetchRoom();
   }, [id, router]);
 
   useEffect(() => {
@@ -43,7 +50,7 @@ export default function BookPage({ params }: BookPageProps) {
     setIsSubmitting(true);
     try {
       const response = await bookingService.create(data);
-      router.push(`/booking/${response.data.id}`);
+      router.push(`/payment/${response.data.id}`);
     } catch (error) {
       console.error('Booking failed:', error);
       alert('Failed to create booking. Please try again.');
@@ -61,7 +68,7 @@ export default function BookPage({ params }: BookPageProps) {
   }
 
   return (
-    <div className="bg-primary/5 min-h-screen pb-32">
+    <div className="bg-white min-h-screen pb-32">
       <div className="bg-white border-b border-primary/5 py-16 px-4 shadow-xl shadow-primary/5">
         <div className="container mx-auto max-w-5xl">
           <button
@@ -73,8 +80,8 @@ export default function BookPage({ params }: BookPageProps) {
             </svg>
             <span>Back to room</span>
           </button>
-          <h1 className="text-4xl md:text-6xl font-black text-primary tracking-tight uppercase">
-            Confirm your <br className="hidden md:block" /> booking
+          <h1 className="text-4xl md:text-5xl font-black text-primary tracking-tight uppercase">
+            Confirm your booking
           </h1>
           <p className="text-primary/50 font-medium mt-6 text-lg">
             You are booking: <span className="text-primary font-black uppercase tracking-tight">{room.name}</span>

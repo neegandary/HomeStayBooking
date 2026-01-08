@@ -51,7 +51,7 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
               <h3 className="text-lg font-black text-primary tracking-tight group-hover:text-secondary transition-colors uppercase">
                 {booking.room?.name || `Booking #${booking.id.slice(0, 8)}`}
               </h3>
-              <span className="text-xl font-black text-primary tracking-tighter">${booking.totalPrice}</span>
+              <span className="text-xl font-black text-primary tracking-tighter">{booking.totalPrice.toLocaleString('vi-VN')}đ</span>
             </div>
 
             <div className="grid grid-cols-2 gap-4 mb-4">
@@ -82,6 +82,14 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
             >
               View Receipt
             </Link>
+            {booking.status === 'pending' && (
+              <Link
+                href={`/payment/${booking.id}`}
+                className="flex-1 bg-action text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-tiger-orange transition-all text-center shadow-lg shadow-action/20 active:scale-[0.98]"
+              >
+                Pay Now
+              </Link>
+            )}
             {canCancel && onCancel && (
               <button
                 onClick={() => onCancel(booking.id)}

@@ -6,16 +6,24 @@ import { useAuth } from '@/hooks/useAuth';
 import DashboardSidebar from '@/components/layout/DashboardSidebar';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push('/login?redirect=/dashboard');
+    if (!isLoading) {
+      if (!isAuthenticated) {
+        router.push('/login?redirect=/dashboard');
+        return;
+      }
+      // Redirect admin users to admin dashboard
+      if (user?.role === 'admin') {
+        router.replace('/admin');
+      }
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [isLoading, isAuthenticated, user, router]);
 
-  if (isLoading || !isAuthenticated) {
+  // Show loading while checking auth or if admin (will be redirected)
+  if (isLoading || !isAuthenticated || user?.role === 'admin') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-primary/5">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -26,7 +34,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen bg-white flex flex-col lg:flex-row bg-primary/5">
       <DashboardSidebar />
-      <main className="flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto">
+      <main className="bg-white flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto">
         <div className="container mx-auto max-w-6xl">
           {children}
         </div>

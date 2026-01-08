@@ -15,7 +15,7 @@ interface BookingFormProps {
 
 const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, excludeDates = [] }) => {
   const [formData, setFormData] = useState<BookingFormData>({
-    roomId: room.id,
+    roomId: room.id || '',
     checkIn: null,
     checkOut: null,
     guests: 1,
@@ -37,7 +37,8 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
       alert('Please select check-in and check-out dates');
       return;
     }
-    await onSubmit(formData);
+    // Include totalPrice in the submission
+    await onSubmit({ ...formData, totalPrice: total });
   };
 
   const handleDateChange = (dates: { checkIn: string | null; checkOut: string | null }) => {
@@ -46,12 +47,12 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
 
   return (
     <form onSubmit={handleSubmit} className="space-y-12">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+      <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-12">
         {/* Left: Date Selection & Details */}
         <div className="space-y-10">
           <section>
             <h3 className="text-xl font-black text-primary mb-6 uppercase tracking-tight">Select Dates</h3>
-            <div className="bg-white p-6 rounded-3xl border border-primary/5 shadow-xl shadow-primary/5">
+            <div className="bg-white p-6 rounded-3xl border border-primary/5 shadow-xl shadow-primary/5 w-full">
               <DateRangePicker
                 checkIn={formData.checkIn}
                 checkOut={formData.checkOut}
@@ -144,21 +145,21 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
 
               <div className="space-y-5 mb-10">
                 <div className="flex justify-between text-white/50 text-xs font-black uppercase tracking-widest">
-                  <span className="underline decoration-white/10 underline-offset-8">${room.price} x {nights} nights</span>
-                  <span className="text-white">${subtotal}</span>
+                  <span className="underline decoration-white/10 underline-offset-8">{room.price.toLocaleString('vi-VN')}đ x {nights} nights</span>
+                  <span className="text-white">{subtotal.toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between text-white/50 text-xs font-black uppercase tracking-widest">
                   <span className="underline decoration-white/10 underline-offset-8">Cleaning fee</span>
-                  <span className="text-white">${cleaningFee}</span>
+                  <span className="text-white">{cleaningFee.toLocaleString('vi-VN')}đ</span>
                 </div>
                 <div className="flex justify-between text-white/50 text-xs font-black uppercase tracking-widest">
                   <span className="underline decoration-white/10 underline-offset-8">Service fee</span>
-                  <span className="text-white">${serviceFee.toFixed(2)}</span>
+                  <span className="text-white">{serviceFee.toLocaleString('vi-VN')}đ</span>
                 </div>
                 <hr className="border-white/10 my-8" />
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Total Price</span>
-                  <span className="text-4xl font-black tracking-tighter text-action">${total.toFixed(2)}</span>
+                  <span className="text-4xl font-black tracking-tighter text-action">{total.toLocaleString('vi-VN')}đ</span>
                 </div>
               </div>
 

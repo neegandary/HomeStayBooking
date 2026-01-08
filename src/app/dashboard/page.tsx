@@ -4,19 +4,24 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { bookingService } from '@/lib/bookingService';
 import { Booking } from '@/types/booking';
-import { mockRooms } from '@/constants/mockRooms';
+import { Room } from '@/types/room';
 import BookingCard from '@/components/features/BookingCard';
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
+  const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'confirmed' | 'cancelled' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'checked-in' | 'completed' | 'cancelled'>('all');
 
   const fetchBookings = async () => {
     setIsLoading(true);
     try {
-      const response = await bookingService.getAll();
-      setBookings(response.data);
+      const [bookingsRes, roomsRes] = await Promise.all([
+        bookingService.getAll(),
+        fetch('/api/rooms').then(res => res.json())
+      ]);
+      setBookings(bookingsRes.data);
+      setRooms(roomsRes);
     } catch (error) {
       console.error('Failed to fetch bookings:', error);
     } finally {
@@ -59,7 +64,7 @@ export default function BookingsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight">
+          <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight uppercase">
             My Bookings
           </h1>
           <p className="text-primary/50 font-medium mt-1">
@@ -68,11 +73,11 @@ export default function BookingsPage() {
         </div>
 
         <div className="flex bg-white p-1.5 rounded-2xl border border-primary/5 shadow-sm w-fit overflow-x-auto">
-          {(['all', 'confirmed', 'completed', 'cancelled'] as const).map((f) => (
+          {(['all', 'pending', 'confirmed', 'checked-in', 'completed', 'cancelled'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+              className={`px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
                 filter === f
                   ? 'bg-primary text-white shadow-xl shadow-primary/20'
                   : 'text-primary/40 hover:text-primary'
@@ -87,7 +92,7 @@ export default function BookingsPage() {
       {filteredBookings.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
           {filteredBookings.map((booking) => {
-            const room = mockRooms.find(r => r.id === booking.roomId);
+            const room = rooms.find(r => r._id === booking.roomId || r.id === booking.roomId);
             return (
               <BookingCard
                 key={booking.id}

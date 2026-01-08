@@ -1,21 +1,40 @@
 'use client';
 
-import React, { useMemo, Suspense } from 'react';
+import React, { useMemo, Suspense, useState, useEffect } from 'react';
 import { useSearchParams } from 'next/navigation';
 import SearchBar from '@/components/features/SearchBar';
 import FilterSidebar from '@/components/features/FilterSidebar';
 import RoomGrid from '@/components/features/RoomGrid';
-import { mockRooms } from '@/constants/mockRooms';
+import { Room } from '@/types/room';
 
 function RoomsContent() {
   const searchParams = useSearchParams();
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchRooms = async () => {
+      try {
+        const response = await fetch('/api/rooms');
+        if (response.ok) {
+          const data = await response.json();
+          setRooms(data);
+        }
+      } catch (error) {
+        console.error('Error fetching rooms:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRooms();
+  }, []);
 
   const filteredRooms = useMemo(() => {
-    const maxPrice = parseInt(searchParams.get('maxPrice') || '1000');
+    const maxPrice = parseInt(searchParams.get('maxPrice') || '20000000');
     const minGuests = parseInt(searchParams.get('guests') || '1');
     const selectedAmenities = searchParams.getAll('amenities');
 
-    return mockRooms.filter(room => {
+    return rooms.filter(room => {
       // Price filter
       if (room.price > maxPrice) return false;
 
@@ -34,7 +53,18 @@ function RoomsContent() {
 
       return true;
     });
-  }, [searchParams]);
+  }, [searchParams, rooms]);
+
+  if (loading) {
+    return (
+      <div className="bg-white min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-primary/60 font-medium">Loading rooms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen">

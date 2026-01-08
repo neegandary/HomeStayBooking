@@ -2,11 +2,19 @@ import React from 'react';
 import HeroSection from '@/components/features/HeroSection';
 import RoomGrid from '@/components/features/RoomGrid';
 import WeekOneShowcase from '@/components/features/WeekOneShowcase';
-import { mockRooms } from '@/constants/mockRooms';
 import Link from 'next/link';
+import connectDB from '@/lib/db/mongodb';
+import Room from '@/models/Room';
+import Footer from '@/components/layout/Footer';
 
-export default function Home() {
-  const featuredRooms = mockRooms.slice(0, 3);
+async function getFeaturedRooms() {
+  await connectDB();
+  const rooms = await Room.find({}).limit(3).lean();
+  return JSON.parse(JSON.stringify(rooms));
+}
+
+export default async function Home() {
+  const featuredRooms = await getFeaturedRooms();
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -85,6 +93,9 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
