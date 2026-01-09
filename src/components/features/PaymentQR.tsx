@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { PaymentInfo } from '@/types/payment';
 import Image from 'next/image';
 

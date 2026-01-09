@@ -1,14 +1,13 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay, FreeMode } from 'swiper/modules';
+import { Pagination, Autoplay } from 'swiper/modules';
 
 // Import Swiper styles
 import 'swiper/css';
-import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import 'swiper/css/free-mode';
 
 const destinations = [
   {
@@ -56,7 +55,7 @@ const WeekOneShowcase = () => {
 
         <div className="w-full">
           <Swiper
-            modules={[Navigation, Pagination, Autoplay]}
+            modules={[Pagination, Autoplay]}
             grabCursor={true}
             centeredSlides={true}
             slidesPerView={'auto'}
@@ -76,10 +75,13 @@ const WeekOneShowcase = () => {
             {destinations.map((destination) => (
               <SwiperSlide key={destination.id} className="w-[80vw] max-w-[500px]">
                 <div className="relative aspect-[16/10] sm:aspect-[16/9] rounded-[2rem] overflow-hidden group shadow-2xl shadow-primary/10">
-                  <img
+                  <Image
                     src={destination.image}
                     alt={destination.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    fill
+                    sizes="(max-width: 768px) 80vw, 500px"
+                    className="object-cover transition-transform duration-700 group-hover:scale-110"
+                    loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-8">
                     <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tight">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Room } from '@/types/room';
 
 interface RoomTableProps {
@@ -46,12 +47,14 @@ export default function RoomTable({
               <tr key={room.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
                 <td className="px-6 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex-shrink-0">
+                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex-shrink-0 relative">
                       {room.images[0] && (
-                        <img
+                        <Image
                           src={room.images[0]}
                           alt={room.name}
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="48px"
+                          className="object-cover"
                         />
                       )}
                     </div>

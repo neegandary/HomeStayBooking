@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, use } from 'react';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { bookingService } from '@/lib/bookingService';
 import { Booking } from '@/types/booking';
@@ -188,10 +189,12 @@ export default function PaymentPage({ params }: PaymentPageProps) {
               <div className="space-y-8">
                 <div className="flex gap-6">
                   <div className="w-24 h-24 bg-primary/5 rounded-2xl overflow-hidden flex-shrink-0 relative">
-                    <img
+                    <Image
                       src={room.images[0]}
                       alt={room.name}
-                      className="w-full h-full object-cover"
+                      fill
+                      sizes="96px"
+                      className="object-cover"
                     />
                   </div>
                   <div className="space-y-2">

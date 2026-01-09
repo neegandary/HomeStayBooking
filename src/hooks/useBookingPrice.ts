@@ -13,7 +13,7 @@ export function useBookingPrice(
       const end = parseISO(checkOut);
       const diff = differenceInDays(end, start);
       return diff > 0 ? diff : 0;
-    } catch (e) {
+    } catch {
       return 0;
     }
   }, [checkIn, checkOut]);

@@ -33,7 +33,6 @@ export default function AdminCheckinPage() {
   const [checkinResult, setCheckinResult] = useState<CheckinResult | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isScannerReady, setIsScannerReady] = useState(false);
   const scannerRef = useRef<Html5QrcodeScanner | null>(null);
 
   const initScanner = useCallback(() => {
@@ -87,8 +86,6 @@ export default function AdminCheckinPage() {
           // Ignore scan errors (no QR found) - this is normal when no QR is in view
         }
       );
-
-      setIsScannerReady(true);
     }, 100);
   }, []);
 
@@ -120,7 +117,7 @@ export default function AdminCheckinPage() {
 
       const result = await response.json();
       setCheckinResult(result);
-    } catch (err) {
+    } catch {
       setCheckinResult({ valid: false, error: 'Network error. Please try again.' });
     } finally {
       setIsProcessing(false);
@@ -131,7 +128,6 @@ export default function AdminCheckinPage() {
     setScanResult(null);
     setCheckinResult(null);
     setError(null);
-    setIsScannerReady(false);
 
     // Reinitialize scanner after state reset
     setTimeout(() => {

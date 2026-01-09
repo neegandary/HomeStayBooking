@@ -25,7 +25,6 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
           images={room.images}
           autoplay={isHovered}
           showPagination={true}
-          showNavigation={false}
           className="h-full transition-transform duration-500 group-hover:scale-110 [&_.swiper-pagination]:z-30 [&_.swiper-pagination]:relative"
         />
         <div className="absolute top-4 right-4 z-10 bg-primary/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-black/10">

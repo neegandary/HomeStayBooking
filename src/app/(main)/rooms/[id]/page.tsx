@@ -10,9 +10,14 @@ interface RoomDetailPageProps {
 }
 
 async function getRoom(id: string) {
-  await connectDB();
-  const room = await Room.findById(id).lean();
-  return room ? JSON.parse(JSON.stringify(room)) : null;
+  try {
+    await connectDB();
+    const room = await Room.findById(id).lean();
+    return room ? JSON.parse(JSON.stringify(room)) : null;
+  } catch (error) {
+    console.error('Failed to fetch room:', error);
+    return null;
+  }
 }
 
 export async function generateMetadata({ params }: RoomDetailPageProps) {

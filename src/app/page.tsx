@@ -7,10 +7,18 @@ import connectDB from '@/lib/db/mongodb';
 import Room from '@/models/Room';
 import Footer from '@/components/layout/Footer';
 
+// Force dynamic rendering to avoid prerender errors with MongoDB
+export const dynamic = 'force-dynamic';
+
 async function getFeaturedRooms() {
-  await connectDB();
-  const rooms = await Room.find({}).limit(3).lean();
-  return JSON.parse(JSON.stringify(rooms));
+  try {
+    await connectDB();
+    const rooms = await Room.find({}).limit(3).lean();
+    return JSON.parse(JSON.stringify(rooms));
+  } catch (error) {
+    console.error('Failed to fetch featured rooms:', error);
+    return [];
+  }
 }
 
 export default async function Home() {

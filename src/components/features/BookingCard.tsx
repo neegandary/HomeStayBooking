@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { Booking } from '@/types/booking';
 import { Room } from '@/types/room';
@@ -27,10 +28,12 @@ const BookingCard: React.FC<BookingCardProps> = ({ booking, onCancel }) => {
         {/* Thumbnail */}
         <div className="w-full md:w-48 h-48 md:h-auto relative overflow-hidden bg-primary/5">
           {booking.room?.images?.[0] ? (
-            <img
+            <Image
               src={booking.room.images[0]}
               alt={booking.room.name}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              fill
+              sizes="(max-width: 768px) 100vw, 192px"
+              className="object-cover transition-transform duration-500 group-hover:scale-110"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-primary/10">

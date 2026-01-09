@@ -18,7 +18,6 @@ const HeroSection = () => {
         <ImageCarousel
           images={heroImages}
           autoplay={true}
-          showNavigation={false}
           showPagination={false}
           className="h-full"
         />
