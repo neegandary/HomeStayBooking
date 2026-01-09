@@ -55,8 +55,7 @@ export function ImageCarousel({
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
               className="object-cover"
-              loading={i === 0 ? 'eager' : 'lazy'}
-              priority={i === 0}
+              loading="lazy"
             />
           </div>
         </SwiperSlide>
