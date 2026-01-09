@@ -60,9 +60,10 @@ const WeekOneShowcase = () => {
             centeredSlides={true}
             slidesPerView={'auto'}
             spaceBetween={40}
-            loop={true}
+            loop={destinations.length >= 4}
+            loopAdditionalSlides={2}
             autoplay={{
-              delay: 1000,
+              delay: 3000,
               disableOnInteraction: false,
               pauseOnMouseEnter: true,
             }}

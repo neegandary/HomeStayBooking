@@ -35,14 +35,22 @@ export function ImageCarousel({
     }
   }, [autoplay, swiper]);
 
+  // Only enable loop if there are enough slides (minimum 3 for loop to work properly)
+  const enableLoop = images.length >= 3;
+
   return (
     <Swiper
       modules={[Pagination, Autoplay]}
       pagination={showPagination ? { clickable: true } : false}
-      autoplay={{
-        delay: 2500,
-        disableOnInteraction: false,
-      }}
+      autoplay={
+        autoplay
+          ? {
+            delay: 2500,
+            disableOnInteraction: false,
+          }
+          : false
+      }
+      loop={enableLoop}
       onSwiper={setSwiper}
       className={`w-full h-full ${className}`}
     >
