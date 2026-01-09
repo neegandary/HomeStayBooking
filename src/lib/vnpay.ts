@@ -1,14 +1,29 @@
 import crypto from 'crypto';
 import { format } from 'date-fns';
 
+// Get the app URL - works for both local and Vercel deployment
+function getAppUrl(): string {
+  // Custom domain or explicit setting (highest priority)
+  if (process.env.NEXT_PUBLIC_APP_URL) {
+    return process.env.NEXT_PUBLIC_APP_URL;
+  }
+  // Vercel production URL
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+  // Vercel deployment URL (preview/branch deployments)
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  // Fallback for local development
+  return 'http://localhost:3000';
+}
+
 // VNPay Sandbox Configuration
 const VNPAY_CONFIG = {
   vnp_TmnCode: 'CGXZLS0Z', // Sandbox TMN Code
   vnp_HashSecret: 'XNBCJFAKAZQSGTARRLGCHVZWCIOIGSHN', // Sandbox Hash Secret
   vnp_Url: 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
-  vnp_ReturnUrl: process.env.NEXT_PUBLIC_APP_URL 
-    ? `${process.env.NEXT_PUBLIC_APP_URL}/api/webhooks/vnpay`
-    : 'http://localhost:3000/api/webhooks/vnpay',
   vnp_Version: '2.1.0',
   vnp_Command: 'pay',
   vnp_CurrCode: 'VND',
@@ -49,7 +64,7 @@ export const vnpay = {
       vnp_OrderInfo: orderInfo,
       vnp_OrderType: 'other',
       vnp_Amount: String(amount * 100), // VNPay requires amount * 100
-      vnp_ReturnUrl: VNPAY_CONFIG.vnp_ReturnUrl,
+      vnp_ReturnUrl: `${getAppUrl()}/api/webhooks/vnpay`,
       vnp_IpAddr: ipAddr,
       vnp_CreateDate: createDate,
     };
@@ -70,7 +85,7 @@ export const vnpay = {
    */
   verifyReturnUrl: (vnpParams: Record<string, string>): boolean => {
     const secureHash = vnpParams['vnp_SecureHash'];
-    
+
     // Remove hash params for verification
     const params = { ...vnpParams };
     delete params['vnp_SecureHash'];
