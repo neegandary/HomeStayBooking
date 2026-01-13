@@ -1,59 +1,61 @@
 'use client';
 
-import React, { useMemo, Suspense, useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, { Suspense, useState, useEffect, useCallback } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
 import SearchBar from '@/components/features/SearchBar';
 import FilterSidebar from '@/components/features/FilterSidebar';
 import RoomGrid from '@/components/features/RoomGrid';
 import { Room } from '@/types/room';
 
+interface RoomsResponse {
+  rooms: Room[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 function RoomsContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [rooms, setRooms] = useState<Room[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
+  // Build API URL with current search params for server-side filtering
+  const fetchRooms = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Pass all search params to API for server-side filtering
+      const params = new URLSearchParams(searchParams.toString());
+      const response = await fetch(`/api/rooms?${params.toString()}`);
+      if (response.ok) {
+        const data: RoomsResponse = await response.json();
+        setRooms(data.rooms);
+        setTotal(data.total);
+        setPage(data.page);
+        setTotalPages(data.totalPages);
+      }
+    } catch (error) {
+      console.error('Error fetching rooms:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [searchParams]);
+
+  // Re-fetch when search params change
   useEffect(() => {
-    const fetchRooms = async () => {
-      try {
-        const response = await fetch('/api/rooms');
-        if (response.ok) {
-          const data = await response.json();
-          setRooms(data);
-        }
-      } catch (error) {
-        console.error('Error fetching rooms:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRooms();
-  }, []);
+  }, [fetchRooms]);
 
-  const filteredRooms = useMemo(() => {
-    const maxPrice = parseInt(searchParams.get('maxPrice') || '20000000');
-    const minGuests = parseInt(searchParams.get('guests') || '1');
-    const selectedAmenities = searchParams.getAll('amenities');
-
-    return rooms.filter(room => {
-      // Price filter
-      if (room.price > maxPrice) return false;
-
-      // Capacity filter
-      if (room.capacity < minGuests) return false;
-
-      // Amenities filter
-      if (selectedAmenities.length > 0) {
-        const hasAllAmenities = selectedAmenities.every(amenity =>
-          room.amenities.some(roomAmenity =>
-            roomAmenity.toLowerCase() === amenity.toLowerCase()
-          )
-        );
-        if (!hasAllAmenities) return false;
-      }
-
-      return true;
-    });
-  }, [searchParams, rooms]);
+  // Handle page change
+  const handlePageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', newPage.toString());
+    router.push(`/rooms?${params.toString()}`);
+  };
 
   if (loading) {
     return (
@@ -89,7 +91,7 @@ function RoomsContent() {
           <div className="flex-1">
             <div className="flex justify-between items-end mb-8 border-b border-primary/5 pb-6">
               <h2 className="text-xl font-black text-primary uppercase tracking-widest">
-                Available Rooms <span className="text-primary/20 font-black text-sm ml-3">/ {filteredRooms.length} found</span>
+                Available Rooms <span className="text-primary/20 font-black text-sm ml-3">/ {total} found</span>
               </h2>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">Sort by:</span>
@@ -101,7 +103,26 @@ function RoomsContent() {
               </div>
             </div>
 
-            <RoomGrid rooms={filteredRooms} />
+            <RoomGrid rooms={rooms} />
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8">
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                  <button
+                    key={p}
+                    onClick={() => handlePageChange(p)}
+                    className={`w-10 h-10 rounded-lg font-bold text-sm transition-all ${
+                      p === page
+                        ? 'bg-primary text-white'
+                        : 'bg-primary/5 text-primary hover:bg-primary/10'
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
