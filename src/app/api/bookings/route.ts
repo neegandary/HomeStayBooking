@@ -1,10 +1,26 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Booking from '@/models/Booking';
+import Promotion from '@/models/Promotion';
 import { sepay } from '@/lib/sepay';
 import { withAuth, isAuthenticated } from '@/lib/auth';
 import { createBookingSchema } from '@/lib/validations';
 import mongoose from 'mongoose';
+
+// Helper function to calculate discount
+function calculateDiscount(promo: { type: string; value: number; maxDiscount?: number }, orderValue: number): number {
+  let discount: number;
+  if (promo.type === 'percentage') {
+    discount = Math.round(orderValue * (promo.value / 100));
+    if (promo.maxDiscount && discount > promo.maxDiscount) {
+      discount = promo.maxDiscount;
+    }
+  } else {
+    discount = promo.value;
+  }
+  // Ensure discount doesn't exceed order value
+  return Math.min(discount, orderValue);
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -58,14 +74,48 @@ export async function POST(request: NextRequest) {
 
     // Check if roomId is a valid MongoDB ObjectId, if not generate a new one for mock data
     let roomId = body.roomId;
-    const isValidObjectId = mongoose.Types.ObjectId.isValid(roomId) && 
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(roomId) &&
       (new mongoose.Types.ObjectId(roomId)).toString() === roomId;
-    
+
     if (!isValidObjectId) {
       // For mock room ids like "1", "2", generate a deterministic ObjectId
       // This allows consistent mapping between mock rooms and bookings
       roomId = new mongoose.Types.ObjectId();
     }
+
+    // Handle promo code if provided
+    const originalPrice = body.totalPrice;
+    let discountAmount = 0;
+    let promoCode: string | undefined;
+
+    if (body.promoCode) {
+      const now = new Date();
+      const promo = await Promotion.findOne({
+        code: body.promoCode.toUpperCase(),
+        active: true,
+        validFrom: { $lte: now },
+        validTo: { $gte: now },
+      });
+
+      if (promo) {
+        // Validate usage limit
+        if (promo.usageLimit === null || promo.usedCount < promo.usageLimit) {
+          // Validate minimum order value
+          if (body.totalPrice >= promo.minOrderValue) {
+            discountAmount = calculateDiscount(promo, body.totalPrice);
+            promoCode = promo.code;
+
+            // Increment usage count atomically
+            await Promotion.updateOne(
+              { _id: promo._id },
+              { $inc: { usedCount: 1 } }
+            );
+          }
+        }
+      }
+    }
+
+    const finalPrice = originalPrice - discountAmount;
 
     // Create booking with authenticated user's ID and name
     const newBooking = await Booking.create({
@@ -73,6 +123,10 @@ export async function POST(request: NextRequest) {
       roomId,
       userId: authResult.user.userId,
       guestName: authResult.user.name || authResult.user.email,
+      totalPrice: finalPrice,
+      originalPrice: discountAmount > 0 ? originalPrice : undefined,
+      discountAmount: discountAmount > 0 ? discountAmount : undefined,
+      promoCode,
       status: 'pending',
     });
 

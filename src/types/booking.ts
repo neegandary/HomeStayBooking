@@ -24,4 +24,5 @@ export interface BookingFormData {
   guestPhone: string;
   specialRequests?: string;
   totalPrice?: number;
+  promoCode?: string;
 }

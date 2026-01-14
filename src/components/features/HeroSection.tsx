@@ -1,65 +1,162 @@
 'use client';
 
-import React, { Suspense } from 'react';
-import { ImageCarousel } from '@/components/ui/ImageCarousel';
-import SearchBar from './SearchBar';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const HeroSection = () => {
+  const router = useRouter();
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [guests, setGuests] = useState('');
+
   const heroImages = [
     'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1920&q=80',
     'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80',
     'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1920&q=80',
   ];
 
+  // Auto-advance carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [heroImages.length]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchQuery) params.set('search', searchQuery);
+    if (checkIn) params.set('checkIn', checkIn);
+    if (checkOut) params.set('checkOut', checkOut);
+    if (guests) params.set('guests', guests);
+    router.push(`/rooms?${params.toString()}`);
+  };
+
+  const goToSlide = (index: number) => setCurrentSlide(index);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+
   return (
-    <section className="relative h-[80vh] min-h-[600px] w-full">
-      {/* Background Carousel */}
-      <div className="absolute inset-0 z-0">
-        <ImageCarousel
-          images={heroImages}
-          autoplay={true}
-          showPagination={false}
-          className="h-full"
-        />
-        <div className="absolute inset-0 bg-black/40 z-10" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-20 h-full flex flex-col items-center justify-center px-4 text-center">
-        <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-6 tracking-tight max-w-4xl">
-          Find Your Perfect <br className="hidden md:block" />
-          <span className="text-white/80">Homestay Experience</span>
-        </h1>
-        <p className="text-lg md:text-xl text-white/90 mb-12 max-w-2xl font-medium">
-          Discover unique spaces, cozy cabins, and luxury villas curated just for your next unforgettable journey.
-        </p>
-
-        {/* Search Bar Integration */}
-        <div className="w-full max-w-5xl">
-          <Suspense fallback={<div className="h-16 w-full bg-white/10 animate-pulse rounded-2xl" />}>
-            <SearchBar />
-          </Suspense>
-        </div>
-
-        {/* Floating Badges */}
-        <div className="mt-12 flex flex-wrap justify-center gap-6 text-white text-[10px] font-black uppercase tracking-[0.2em]">
-          <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 shadow-xl shadow-black/10">
-            <svg className="w-5 h-5 text-highlight" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            Top Rated Stays
+    <section className="@container py-10 px-4 sm:px-0">
+      <div className="max-w-[1200px] mx-auto">
+        <div className="relative group flex min-h-[520px] flex-col gap-6 overflow-hidden rounded-3xl shadow-xl shadow-primary/10">
+          {/* Background Carousel */}
+          <div
+            className="absolute inset-0 flex transition-transform duration-500 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {heroImages.map((image, index) => (
+              <div
+                key={index}
+                className="min-w-full h-full bg-cover bg-center"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.5) 100%), url("${image}")`
+                }}
+              />
+            ))}
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 shadow-xl shadow-black/10">
-            <svg className="w-5 h-5 text-accent" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            Verified Hosts
+
+          {/* Content */}
+          <div className="relative z-10 flex flex-col flex-grow items-start justify-end px-4 pb-10 sm:px-10">
+            <div className="flex flex-col gap-2 text-left max-w-2xl">
+              <h1 className="text-white text-4xl font-black leading-tight tracking-tight uppercase sm:text-5xl">
+                FIND YOUR PERFECT HOMESTAY
+              </h1>
+              <h2 className="text-white text-base font-normal leading-normal sm:text-lg">
+                Curated homes for unforgettable getaways.
+              </h2>
+            </div>
+
+            {/* Search Form */}
+            <form onSubmit={handleSearch} className="w-full max-w-4xl bg-white/90 dark:bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl shadow-2xl shadow-black/20 mt-6">
+              <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
+                {/* Search Input */}
+                <label className="flex flex-col min-w-40 h-14 w-full">
+                  <div className="flex w-full flex-1 items-stretch rounded-lg h-full">
+                    <div className="text-muted flex bg-white items-center justify-center pl-4 rounded-l-lg border border-primary/20 border-r-0">
+                      <span className="material-symbols-outlined">search</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action h-full placeholder:text-muted px-4 rounded-l-none border-l-0 text-base font-normal leading-normal"
+                      placeholder="Destination, e.g. Da Lat"
+             />
+                  </div>
+                </label>
+
+                {/* Date Inputs */}
+                <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
+                  <input
+                    type="date"
+                    value={checkIn}
+                    onChange={(e) => setCheckIn(e.target.value)}
+                    className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
+                    placeholder="Check-in"
+           />
+                  <input
+                    type="date"
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
+                    placeholder="Check-out"
+                  />
+                </div>
+
+                {/* Guests Input */}
+                <input
+                  type="number"
+      min="1"
+                  value={guests}
+                  onChange={(e) => setGuests(e.target.value)}
+                  className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
+                  placeholder="Guests"
+                />
+
+                {/* Search Button */}
+                <button
+                  type="submit"
+                  className="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-action text-white text-base font-bold leading-normal tracking-wide hover:bg-opacity-90 transition-colors"
+                >
+                  <span className="truncate">Search</span>
+                </button>
+              </div>
+            </form>
           </div>
-          <div className="flex items-center gap-3 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10 shadow-xl shadow-black/10">
-            <svg className="w-5 h-5 text-secondary" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-            </svg>
-            Free Cancellation
+
+          {/* Carousel Dots */}
+          <div className="absolute inset-x-0 bottom-4 z-20 flex justify-center gap-2">
+            {heroImages.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`h-2 w-2 rounded-full ring-1 ring-white/60 transition-colors ${
+                  currentSlide === index ? 'bg-white' : 'bg-white/50 hover:bg-white'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Navigation Arrows */}
+          <div className="absolute inset-y-0 left-4 z-20 hidden items-center sm:flex">
+            <button
+              onClick={prevSlide}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
+            >
+              <span className="material-symbols-outlined">arrow_back_ios_new</span>
+            </button>
+          </div>
+          <div className="absolute inset-y-0 right-4 z-20 hidden items-center sm:flex">
+            <button
+              onClick={nextSlide}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
+            >
+              <span className="material-symbols-outlined">arrow_forward_ios</span>
+            </button>
           </div>
         </div>
       </div>

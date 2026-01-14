@@ -1,45 +1,70 @@
 @import "tailwindcss";
 
 :root {
-  --sky-blue: #8ecae6;
-  --blue-green: #219ebc;
-  --deep-space: #023047;
-  --amber-flame: #ffb703;
-  --tiger-orange: #fb8500;
+  /* StayEasy Color Palette */
+  --primary: #19192e;
+  --background-light: #fafaf9;
+  --background-dark: #101018;
+  --action: #FF5A5F;
+  --success: #22c55e;
+  --highlight: #f59e0b;
+  --muted: #6e6e7c;
 
-  --background: #ffffff;
-  --foreground: var(--deep-space);
+  --background: var(--background-light);
+  --foreground: #131316;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-sky-blue: var(--sky-blue);
-  --color-blue-green: var(--blue-green);
-  --color-deep-space: var(--deep-space);
-  --color-amber-flame: var(--amber-flame);
-  --color-tiger-orange: var(--tiger-orange);
+  --color-primary: var(--primary);
+  --color-action: var(--action);
+  --color-success: var(--success);
+  --color-highlight: var(--highlight);
+  --color-muted: var(--muted);
+  --color-background-light: var(--background-light);
+  --color-background-dark: var(--background-dark);
 
-  /* Semantic Aliases */
-  --color-primary: var(--deep-space);
-  --color-secondary: var(--blue-green);
-  --color-accent: var(--sky-blue);
-  --color-highlight: var(--amber-flame);
-  --color-action: var(--tiger-orange);
+  /* Legacy aliases for compatibility */
+  --color-secondary: var(--action);
+  --color-accent: var(--highlight);
 
-  --font-sans: var(--font-geist-sans);
+  --font-sans: "Manrope", sans-serif;
+  --font-display: "Manrope", sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
+.dark {
+  --background: var(--background-dark);
+  --foreground: rgba(255, 255, 255, 0.9);
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not(.light) {
+    --background: var(--background-dark);
+    --foreground: rgba(255, 255, 255, 0.9);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Manrope", sans-serif;
+}
+
+/* Material Symbols */
+.material-symbols-outlined {
+  font-variation-settings:
+    'FILL' 0,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+/* Hero Carousel Animation */
+@keyframes hero-scroll {
+  0%, 15% { transform: translateX(0); }
+  33%, 48% { transform: translateX(-100%); }
+  66%, 81% { transform: translateX(-200%); }
+  100% { transform: translateX(0); }
 }

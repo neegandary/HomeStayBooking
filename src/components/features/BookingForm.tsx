@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Room } from '@/types/room';
 import { BookingFormData } from '@/types/booking';
 import DateRangePicker from '@/components/ui/DateRangePicker';
+import PromoCodeInput from '@/components/features/PromoCodeInput';
 import { useBookingPrice } from '@/hooks/useBookingPrice';
 
 interface BookingFormProps {
@@ -25,11 +26,18 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
     specialRequests: '',
   });
 
+  // Promo code state
+  const [promoCode, setPromoCode] = useState<string | undefined>();
+  const [promoDiscount, setPromoDiscount] = useState<number>(0);
+
   const { nights, subtotal, cleaningFee, serviceFee, total } = useBookingPrice(
     room.price,
     formData.checkIn,
     formData.checkOut
   );
+
+  // Calculate final total after discount
+  const finalTotal = Math.max(0, total - promoDiscount);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,12 +45,31 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
       alert('Please select check-in and check-out dates');
       return;
     }
-    // Include totalPrice in the submission
-    await onSubmit({ ...formData, totalPrice: total });
+    // Include totalPrice and promoCode in the submission
+    await onSubmit({
+      ...formData,
+      totalPrice: total, // Send original total, backend will apply discount
+      promoCode,
+    });
   };
 
   const handleDateChange = (dates: { checkIn: string | null; checkOut: string | null }) => {
     setFormData(prev => ({ ...prev, ...dates }));
+    // Reset promo when dates change (price changes)
+    if (promoCode) {
+      setPromoCode(undefined);
+      setPromoDiscount(0);
+    }
+  };
+
+  const handlePromoApply = (data: { code: string; discount: number }) => {
+    setPromoCode(data.code);
+    setPromoDiscount(data.discount);
+  };
+
+  const handlePromoRemove = () => {
+    setPromoCode(undefined);
+    setPromoDiscount(0);
   };
 
   return (
@@ -156,10 +183,37 @@ const BookingForm: React.FC<BookingFormProps> = ({ room, onSubmit, isLoading, ex
                   <span className="underline decoration-white/10 underline-offset-8">Service fee</span>
                   <span className="text-white">{serviceFee.toLocaleString('vi-VN')}đ</span>
                 </div>
+
+                {/* Promo Code Section */}
+                {nights > 0 && (
+                  <div className="pt-4">
+                    <PromoCodeInput
+                      orderValue={total}
+                      onApply={handlePromoApply}
+                      onRemove={handlePromoRemove}
+                      appliedCode={promoCode}
+                      appliedDiscount={promoDiscount}
+                    />
+                  </div>
+                )}
+
+                {/* Discount Display */}
+                {promoDiscount > 0 && (
+                  <div className="flex justify-between text-green-400 text-xs font-black uppercase tracking-widest">
+                    <span>Promo Discount</span>
+                    <span>-{promoDiscount.toLocaleString('vi-VN')}đ</span>
+                  </div>
+                )}
+
                 <hr className="border-white/10 my-8" />
                 <div className="flex justify-between items-end">
                   <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Total Price</span>
-                  <span className="text-4xl font-black tracking-tighter text-action">{total.toLocaleString('vi-VN')}đ</span>
+                  <div className="text-right">
+                    {promoDiscount > 0 && (
+                      <span className="text-sm font-bold text-white/40 line-through mr-2">{total.toLocaleString('vi-VN')}đ</span>
+                    )}
+                    <span className="text-4xl font-black tracking-tighter text-action">{finalTotal.toLocaleString('vi-VN')}đ</span>
+                  </div>
                 </div>
               </div>
 
