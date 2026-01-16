@@ -92,7 +92,7 @@ const SearchBar = () => {
       <form onSubmit={handleSearch} className="flex flex-col md:flex-row items-stretch gap-2">
         {/* Check-in */}
         <div className="flex-1 px-6 py-3 border-b md:border-b-0 md:border-r border-primary/5">
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Check-in</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Nhận phòng</label>
           <DatePicker
             selected={checkIn}
             onChange={(date: Date | null) => setCheckIn(date)}
@@ -100,7 +100,7 @@ const SearchBar = () => {
             startDate={checkIn}
             endDate={checkOut}
             minDate={new Date()}
-            placeholderText="Select date"
+            placeholderText="Chọn ngày"
             dateFormat="dd/MM/yyyy"
             className="search-datepicker"
           />
@@ -108,7 +108,7 @@ const SearchBar = () => {
 
         {/* Check-out */}
         <div className="flex-1 px-6 py-3 border-b md:border-b-0 md:border-r border-primary/5">
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Check-out</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Trả phòng</label>
           <DatePicker
             selected={checkOut}
             onChange={(date: Date | null) => setCheckOut(date)}
@@ -116,7 +116,7 @@ const SearchBar = () => {
             startDate={checkIn}
             endDate={checkOut}
             minDate={checkIn || new Date()}
-            placeholderText="Select date"
+            placeholderText="Chọn ngày"
             dateFormat="dd/MM/yyyy"
             className="search-datepicker"
           />
@@ -124,7 +124,7 @@ const SearchBar = () => {
 
         {/* Guests */}
         <div className="flex-1 px-6 py-3 relative">
-          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Guests</label>
+          <label className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-1">Số khách</label>
           <div className="relative">
             <select
               value={guests}
@@ -132,7 +132,7 @@ const SearchBar = () => {
               className="w-full bg-transparent focus:outline-none text-sm font-black text-primary appearance-none cursor-pointer pr-8"
             >
               {[...Array(10)].map((_, i) => (
-                <option key={i + 1} value={i + 1}>{i + 1} {i === 0 ? 'Guest' : 'Guests'}</option>
+                <option key={i + 1} value={i + 1}>{i + 1} Khách</option>
               ))}
             </select>
             <div className="absolute right-0 top-1/2 -translate-y-1/2 pointer-events-none text-primary/40">
@@ -151,7 +151,7 @@ const SearchBar = () => {
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          Search
+          Tìm kiếm
         </button>
       </form>
     </div>

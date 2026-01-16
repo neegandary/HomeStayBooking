@@ -1,103 +1,187 @@
 'use client';
 
-import React from 'react';
+import React, { useState, memo, useCallback, useMemo } from 'react';
 
 interface Booking {
   id: string;
   roomName: string;
   guestName: string;
   guestEmail: string;
+  guestPhone?: string;
+  specialRequests?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
   totalPrice: number;
-  status: 'pending' | 'confirmed' | 'cancelled';
+  status: 'pending' | 'confirmed' | 'checked-in' | 'completed' | 'cancelled';
   createdAt: string;
 }
 
 interface BookingTableProps {
   bookings: Booking[];
-  onStatusChange: (id: string, status: 'pending' | 'confirmed' | 'cancelled') => void;
+  onStatusChange: (id: string, status: Booking['status']) => void;
+  currentPage: number;
+  totalPages: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  itemsPerPage: number;
 }
 
-const statusStyles = {
-  pending: 'bg-orange-100 text-orange-700',
-  confirmed: 'bg-emerald-100 text-emerald-700',
-  cancelled: 'bg-red-100 text-red-700',
+// Status badge styles using theme colors
+const getStatusStyle = (status: Booking['status']) => {
+  switch (status) {
+    case 'confirmed':
+      return 'bg-success/10 text-success';
+    case 'checked-in':
+      return 'bg-primary/10 text-primary';
+    case 'pending':
+      return 'bg-highlight/10 text-highlight';
+    case 'cancelled':
+      return 'bg-action/10 text-action';
+    case 'completed':
+      return 'bg-muted/10 text-muted';
+    default:
+      return 'bg-muted/10 text-muted';
+  }
 };
 
-export default function BookingTable({ bookings, onStatusChange }: BookingTableProps) {
+const getStatusLabel = (status: Booking['status']) => {
+  switch (status) {
+    case 'confirmed':
+      return 'Confirmed';
+    case 'checked-in':
+      return 'Checked-in';
+    case 'pending':
+      return 'Pending';
+    case 'cancelled':
+      return 'Cancelled';
+    case 'completed':
+      return 'Completed';
+    default:
+      return status;
+  }
+};
+
+function BookingTable({
+  bookings,
+  onStatusChange,
+  currentPage,
+  totalPages,
+  totalItems,
+  onPageChange,
+  itemsPerPage,
+}: BookingTableProps) {
+  const [actionMenuOpen, setActionMenuOpen] = useState<string | null>(null);
+
+  const formatDate = useCallback((dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  }, []);
+
+  const handleToggleMenu = useCallback((bookingId: string) => {
+    setActionMenuOpen(prev => prev === bookingId ? null : bookingId);
+  }, []);
+
+  const handleStatusChange = useCallback((bookingId: string, status: Booking['status']) => {
+    onStatusChange(bookingId, status);
+    setActionMenuOpen(null);
+  }, [onStatusChange]);
+
+  const startItem = useMemo(() => (currentPage - 1) * itemsPerPage + 1, [currentPage, itemsPerPage]);
+  const endItem = useMemo(() => Math.min(currentPage * itemsPerPage, totalItems), [currentPage, itemsPerPage, totalItems]);
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-primary/5 overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-primary/10 bg-white shadow-sm">
       <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-primary/5 bg-primary/[0.02]">
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Guest
-              </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Room
-              </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Dates
-              </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Guests
-              </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Amount
-              </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Status
-              </th>
+        <table className="min-w-full text-sm">
+          <thead className="bg-primary/[0.02]">
+            <tr className="text-left">
+              <th className="px-4 py-3 font-medium text-muted">Booking ID</th>
+              <th className="px-4 py-3 font-medium text-muted">Guest Name</th>
+              <th className="px-4 py-3 font-medium text-muted">Check-in</th>
+              <th className="px-4 py-3 font-medium text-muted">Check-out</th>
+              <th className="px-4 py-3 font-medium text-muted">Room</th>
+              <th className="px-4 py-3 font-medium text-muted">Status</th>
+              <th className="px-4 py-3 font-medium text-muted text-right">Total</th>
+              <th className="px-4 py-3 font-medium text-muted text-center">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-primary/10">
             {bookings.map((booking) => (
-              <tr key={booking.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
-                <td className="px-6 py-4">
-                  <p className="font-bold text-primary">{booking.guestName}</p>
-                  <p className="text-xs text-primary/60">{booking.guestEmail}</p>
+              <tr key={booking.id} className="text-foreground hover:bg-primary/[0.02] transition-colors">
+                <td className="px-4 py-3 font-mono text-xs text-muted">
+                  #{booking.id.slice(-6).toUpperCase()}
                 </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-primary/80">{booking.roomName}</p>
+                <td className="px-4 py-3">
+                  <p className="font-medium">{booking.guestName}</p>
+                  <p className="text-xs text-muted">{booking.guestEmail}</p>
                 </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-primary/80">
-                    {new Date(booking.checkIn).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                    })}
-                    {' - '}
-                    {new Date(booking.checkOut).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    })}
-                  </p>
+                <td className="px-4 py-3 text-muted">{formatDate(booking.checkIn)}</td>
+                <td className="px-4 py-3 text-muted">{formatDate(booking.checkOut)}</td>
+                <td className="px-4 py-3 text-muted">{booking.roomName}</td>
+                <td className="px-4 py-3">
+                  <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium ${getStatusStyle(booking.status)}`}>
+                    {getStatusLabel(booking.status)}
+                  </span>
                 </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-primary/80">{booking.guests}</p>
+                <td className="px-4 py-3 text-right text-muted">
+                  {booking.totalPrice.toLocaleString('vi-VN')}đ
                 </td>
-                <td className="px-6 py-4">
-                  <p className="font-bold text-primary">{booking.totalPrice.toLocaleString('vi-VN')}đ</p>
-                </td>
-                <td className="px-6 py-4">
-                  <select
-                    value={booking.status}
-                    onChange={(e) =>
-                      onStatusChange(
-                        booking.id,
-                        e.target.value as 'pending' | 'confirmed' | 'cancelled'
-                      )
-                    }
-                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider border-0 cursor-pointer transition-colors ${statusStyles[booking.status]}`}
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="confirmed">Confirmed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
+                <td className="px-4 py-3">
+                  <div className="flex justify-center items-center gap-2 relative">
+                    <button
+                      aria-label="View Details"
+                      className="p-1.5 rounded-md hover:bg-primary/5 text-muted hover:text-primary transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">visibility</span>
+                    </button>
+                    <button
+                      aria-label="Edit Booking"
+                      className="p-1.5 rounded-md hover:bg-primary/5 text-muted hover:text-primary transition-colors"
+                    >
+                      <span className="material-symbols-outlined text-lg">edit</span>
+                    </button>
+                    <div className="relative">
+                      <button
+                        aria-label="More Actions"
+                        onClick={() => handleToggleMenu(booking.id)}
+                        className="p-1.5 rounded-md hover:bg-primary/5 text-muted hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-lg">more_horiz</span>
+                      </button>
+                      {actionMenuOpen === booking.id && (
+                        <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-primary/10 py-1 z-10">
+                          {booking.status === 'pending' && (
+                            <button
+                              onClick={() => handleStatusChange(booking.id, 'confirmed')}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-primary/5 text-success"
+                            >
+                              Confirm
+                            </button>
+                          )}
+                          {booking.status === 'confirmed' && (
+                            <button
+                              onClick={() => handleStatusChange(booking.id, 'checked-in')}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-primary/5 text-primary"
+                            >
+                              Check-in
+                            </button>
+                          )}
+                          {booking.status !== 'cancelled' && booking.status !== 'completed' && (
+                            <button
+                              onClick={() => handleStatusChange(booking.id, 'cancelled')}
+                              className="w-full px-3 py-2 text-left text-sm hover:bg-action/5 text-action"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </td>
               </tr>
             ))}
@@ -107,9 +191,37 @@ export default function BookingTable({ bookings, onStatusChange }: BookingTableP
 
       {bookings.length === 0 && (
         <div className="p-12 text-center">
-          <p className="text-primary/60">No bookings found.</p>
+          <span className="material-symbols-outlined text-4xl text-muted mb-2">calendar_month</span>
+          <p className="text-muted">No bookings found.</p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 0 && (
+        <div className="flex items-center justify-between border-t border-primary/10 bg-white px-4 py-3">
+          <p className="text-sm text-muted">
+            Showing {startItem} to {endItem} of {totalItems} results
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+              className="flex items-center justify-center rounded-lg h-8 px-3 bg-white border border-primary/10 text-foreground text-sm font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+              className="flex items-center justify-center rounded-lg h-8 px-3 bg-white border border-primary/10 text-foreground text-sm font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+export default memo(BookingTable);

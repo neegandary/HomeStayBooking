@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import api from '@/lib/axios';
 import { Room } from '@/types/room';
-import { RoomTable, SearchFilter, RoomModal } from '@/components/admin';
+import { RoomTable, RoomModal } from '@/components/admin';
+
+// Pagination config
+const ITEMS_PER_PAGE = 10;
 
 export default function AdminRoomsPage() {
   const [rooms, setRooms] = useState<Room[]>([]);
@@ -11,6 +14,7 @@ export default function AdminRoomsPage() {
   const [search, setSearch] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchRooms();
@@ -40,7 +44,6 @@ export default function AdminRoomsPage() {
   const handleModalSubmit = async (data: Partial<Room>) => {
     try {
       if (selectedRoom) {
-        // Update existing room
         const { data: updatedRoom } = await api.put(
           `/admin/rooms/${selectedRoom.id}`,
           data
@@ -49,7 +52,6 @@ export default function AdminRoomsPage() {
           prev.map((r) => (r.id === selectedRoom.id ? updatedRoom : r))
         );
       } else {
-        // Create new room
         const { data: newRoom } = await api.post('/admin/rooms', data);
         setRooms((prev) => [...prev, newRoom]);
       }
@@ -80,9 +82,39 @@ export default function AdminRoomsPage() {
     }
   };
 
+  // Filter rooms by search
   const filteredRooms = rooms.filter((room) =>
     room.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
+  const paginatedRooms = filteredRooms.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset to page 1 when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, '...', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, '...', totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, '...', currentPage, '...', totalPages);
+      }
+    }
+    return pages;
+  };
 
   if (isLoading) {
     return (
@@ -93,45 +125,90 @@ export default function AdminRoomsPage() {
   }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
-        <div>
-          <h1 className="text-3xl font-black text-primary tracking-tight">
-            Room Management
-          </h1>
-          <p className="text-primary/60 mt-1">
-            Manage your property listings and availability.
-          </p>
-        </div>
+    <div className="flex flex-col max-w-7xl mx-auto">
+      {/* Page Header */}
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
+        <h1 className="text-foreground text-3xl font-bold leading-tight">
+          Manage Rooms
+        </h1>
         <button
           onClick={handleAdd}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-[0.98]"
+          className="flex items-center justify-center gap-2 overflow-hidden rounded-lg h-10 px-4 bg-primary text-white text-sm font-bold leading-normal shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors"
         >
-          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          Add Room
+          <span className="material-symbols-outlined text-lg">add</span>
+          <span className="truncate">Add New Room</span>
         </button>
       </div>
 
-      {/* Search */}
+      {/* Search Bar */}
       <div className="mb-6">
-        <SearchFilter
-          search={search}
-          onSearchChange={setSearch}
-          placeholder="Search rooms..."
-          showStatusFilter={false}
-        />
+        <div className="relative max-w-md">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-muted text-xl">
+            search
+          </span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search rooms..."
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg border border-primary/10 dark:border-primary/20 bg-white text-foreground placeholder-muted focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-sm"
+          />
+        </div>
       </div>
 
       {/* Table */}
       <RoomTable
-        rooms={filteredRooms}
+        rooms={paginatedRooms}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onToggleAvailability={handleToggleAvailability}
       />
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-center mt-6">
+          <nav className="flex items-center gap-1">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-primary/5 dark:hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_left</span>
+            </button>
+
+            {getPageNumbers().map((page, idx) =>
+              typeof page === 'number' ? (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(page)}
+                  className={`text-sm font-medium leading-normal flex size-9 items-center justify-center rounded-lg transition-colors ${
+                    currentPage === page
+                      ? 'text-white bg-primary font-bold'
+                      : 'text-muted hover:bg-primary/5 dark:hover:bg-primary/10'
+                  }`}
+                >
+                  {page}
+                </button>
+              ) : (
+                <span
+                  key={idx}
+                  className="text-sm font-medium leading-normal flex size-9 items-center justify-center text-muted"
+                >
+                  ...
+                </span>
+              )
+            )}
+
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="flex size-9 items-center justify-center rounded-lg text-muted hover:bg-primary/5 dark:hover:bg-primary/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              <span className="material-symbols-outlined text-xl">chevron_right</span>
+            </button>
+          </nav>
+        </div>
+      )}
 
       {/* Modal */}
       <RoomModal

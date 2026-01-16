@@ -22,7 +22,7 @@ function RegisterForm() {
       // Redirect is handled by the register function in useAuth
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to create account. Please try again.');
+      setError(error.response?.data?.error || 'Không thể tạo tài khoản. Vui lòng thử lại.');
     } finally {
       setIsLoading(false);
     }
@@ -31,8 +31,8 @@ function RegisterForm() {
   return (
     <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-primary/5 border border-primary/5">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Create Account</h1>
-        <p className="text-primary/50 font-medium text-sm">Join StayEasy and start your journey today.</p>
+        <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Tạo tài khoản</h1>
+        <p className="text-primary/50 font-medium text-sm">Tham gia StayEasy và bắt đầu hành trình của bạn ngay hôm nay.</p>
       </div>
 
       {error && (
@@ -46,7 +46,7 @@ function RegisterForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="name" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Full Name</label>
+          <label htmlFor="name" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Họ và tên</label>
           <input
             id="name"
             type="text"
@@ -54,12 +54,12 @@ function RegisterForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="w-full bg-primary/5 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-primary focus:bg-white focus:border-primary focus:outline-none transition-all placeholder:text-primary/20"
-            placeholder="John Doe"
+            placeholder="Nguyễn Văn A"
           />
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Email Address</label>
+          <label htmlFor="email" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Địa chỉ Email</label>
           <input
             id="email"
             type="email"
@@ -72,7 +72,7 @@ function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Password</label>
+          <label htmlFor="password" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Mật khẩu</label>
           <input
             id="password"
             type="password"
@@ -89,15 +89,15 @@ function RegisterForm() {
           disabled={isLoading}
           className="w-full bg-primary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-deep-space transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
         >
-          {isLoading ? 'Creating account...' : 'Create Account'}
+          {isLoading ? 'Đang tạo tài khoản...' : 'Tạo tài khoản'}
         </button>
       </form>
 
       <div className="mt-10 text-center">
         <p className="text-sm text-primary/50 font-medium">
-          Already have an account?{' '}
+          Đã có tài khoản?{' '}
           <Link href="/login" className="text-primary font-black hover:text-action transition-colors underline decoration-primary/10 underline-offset-8">
-            Log in
+            Đăng nhập
           </Link>
         </p>
       </div>

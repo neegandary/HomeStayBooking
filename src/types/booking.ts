@@ -4,6 +4,9 @@ export interface Booking {
   roomId: string;
   userId: string;
   guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  specialRequests?: string;
   checkIn: string;     // ISO date
   checkOut: string;    // ISO date
   guests: number;

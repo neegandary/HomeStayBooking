@@ -73,8 +73,16 @@ export async function verifyAccessToken(token: string): Promise<TokenPayload | n
     }
     const { payload } = await jwtVerify(token, ACCESS_TOKEN_SECRET);
     return payload as TokenPayload;
-  } catch (error) {
-    console.error('Access token verification failed:', error);
+  } catch (error: unknown) {
+    // Token expired is expected behavior - client will refresh
+    // Only log non-expiration errors
+    const isExpiredError = error instanceof Error &&
+      'code' in error &&
+      (error as { code: string }).code === 'ERR_JWT_EXPIRED';
+
+    if (!isExpiredError) {
+      console.error('Access token verification failed:', error);
+    }
     return null;
   }
 }

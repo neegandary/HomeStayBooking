@@ -74,6 +74,9 @@ export async function POST(request: Request) {
       booking: {
         id: booking._id,
         guestName: booking.guestName,
+        guestEmail: booking.guestEmail,
+        guestPhone: booking.guestPhone,
+        specialRequests: booking.specialRequests,
         checkIn: booking.checkIn,
         checkOut: booking.checkOut,
         guests: booking.guests,

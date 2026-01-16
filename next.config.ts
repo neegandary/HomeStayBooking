@@ -16,10 +16,17 @@ const nextConfig: NextConfig = {
         hostname: 'plus.unsplash.com',
       },
     ],
+    // Optimize images
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
   },
   // Optimize production build
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production' ? { exclude: ['error', 'warn'] } : false,
+  },
+  // Enable experimental features for better performance
+  experimental: {
+    optimizePackageImports: ['swiper', 'date-fns', 'react-datepicker'],
   },
 };
 

@@ -117,12 +117,15 @@ export async function POST(request: NextRequest) {
 
     const finalPrice = originalPrice - discountAmount;
 
-    // Create booking with authenticated user's ID and name
+    // Create booking with authenticated user's ID and contact info from form
     const newBooking = await Booking.create({
       ...body,
       roomId,
       userId: authResult.user.userId,
-      guestName: authResult.user.name || authResult.user.email,
+      guestName: body.guestName || authResult.user.name || authResult.user.email,
+      guestEmail: body.guestEmail,
+      guestPhone: body.guestPhone,
+      specialRequests: body.specialRequests,
       totalPrice: finalPrice,
       originalPrice: discountAmount > 0 ? originalPrice : undefined,
       discountAmount: discountAmount > 0 ? discountAmount : undefined,

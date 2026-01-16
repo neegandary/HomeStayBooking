@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 
 const HeroSection = () => {
@@ -11,11 +11,11 @@ const HeroSection = () => {
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState('');
 
-  const heroImages = [
+  const heroImages = useMemo(() => [
     'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1920&q=80',
     'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1920&q=80',
     'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=1920&q=80',
-  ];
+  ], []);
 
   // Auto-advance carousel
   useEffect(() => {
@@ -25,7 +25,7 @@ const HeroSection = () => {
     return () => clearInterval(timer);
   }, [heroImages.length]);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (searchQuery) params.set('search', searchQuery);
@@ -33,11 +33,9 @@ const HeroSection = () => {
     if (checkOut) params.set('checkOut', checkOut);
     if (guests) params.set('guests', guests);
     router.push(`/rooms?${params.toString()}`);
-  };
+  }, [searchQuery, checkIn, checkOut, guests, router]);
 
-  const goToSlide = (index: number) => setCurrentSlide(index);
-  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroImages.length) % heroImages.length);
-  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroImages.length);
+  const goToSlide = useCallback((index: number) => setCurrentSlide(index), []);
 
   return (
     <section className="@container py-10 px-4 sm:px-0">
@@ -63,15 +61,15 @@ const HeroSection = () => {
           <div className="relative z-10 flex flex-col flex-grow items-start justify-end px-4 pb-10 sm:px-10">
             <div className="flex flex-col gap-2 text-left max-w-2xl">
               <h1 className="text-white text-4xl font-black leading-tight tracking-tight uppercase sm:text-5xl">
-                FIND YOUR PERFECT HOMESTAY
+                TÌM HOMESTAY HOÀN HẢO CỦA BẠN
               </h1>
               <h2 className="text-white text-base font-normal leading-normal sm:text-lg">
-                Curated homes for unforgettable getaways.
+                Những ngôi nhà được tuyển chọn cho kỳ nghỉ khó quên.
               </h2>
             </div>
 
             {/* Search Form */}
-            <form onSubmit={handleSearch} className="w-full max-w-4xl bg-white/90 dark:bg-background-dark/80 backdrop-blur-sm p-4 rounded-xl shadow-2xl shadow-black/20 mt-6">
+            <form onSubmit={handleSearch} className="w-full max-w-6xl bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-2xl shadow-black/20 mt-6">
               <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto_auto] gap-2 items-center">
                 {/* Search Input */}
                 <label className="flex flex-col min-w-40 h-14 w-full">
@@ -84,7 +82,7 @@ const HeroSection = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action h-full placeholder:text-muted px-4 rounded-l-none border-l-0 text-base font-normal leading-normal"
-                      placeholder="Destination, e.g. Da Lat"
+                      placeholder="Điểm đến, vd: Đà Lạt"
              />
                   </div>
                 </label>
@@ -114,7 +112,7 @@ const HeroSection = () => {
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
                   className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
-                  placeholder="Guests"
+                  placeholder="Số khách"
                 />
 
                 {/* Search Button */}
@@ -122,7 +120,7 @@ const HeroSection = () => {
                   type="submit"
                   className="flex w-full min-w-[84px] max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-14 px-5 bg-action text-white text-base font-bold leading-normal tracking-wide hover:bg-opacity-90 transition-colors"
                 >
-                  <span className="truncate">Search</span>
+                  <span className="truncate">Tìm kiếm</span>
                 </button>
               </div>
             </form>
@@ -139,24 +137,6 @@ const HeroSection = () => {
                 }`}
               />
             ))}
-          </div>
-
-          {/* Navigation Arrows */}
-          <div className="absolute inset-y-0 left-4 z-20 hidden items-center sm:flex">
-            <button
-              onClick={prevSlide}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
-            >
-              <span className="material-symbols-outlined">arrow_back_ios_new</span>
-            </button>
-          </div>
-          <div className="absolute inset-y-0 right-4 z-20 hidden items-center sm:flex">
-            <button
-              onClick={nextSlide}
-              className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition-colors hover:bg-white/40"
-            >
-              <span className="material-symbols-outlined">arrow_forward_ios</span>
-            </button>
           </div>
         </div>
       </div>

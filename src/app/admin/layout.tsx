@@ -31,10 +31,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   return (
-    <div className="min-h-screen bg-primary/5 flex flex-col lg:flex-row">
+    <div className="min-h-screen bg-background-light flex">
       <AdminSidebar />
-      <main className=" bg-white flex-1 p-4 md:p-8 lg:p-12 overflow-y-auto">
-        <div className="container mx-auto max-w-7xl">
+      <main className="flex-1 min-h-screen overflow-y-auto">
+        <div className="p-4 md:p-8">
           {children}
         </div>
       </main>

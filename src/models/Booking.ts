@@ -4,6 +4,9 @@ export interface IBooking extends Document {
   roomId: mongoose.Types.ObjectId;
   userId: mongoose.Types.ObjectId;
   guestName?: string;
+  guestEmail?: string;
+  guestPhone?: string;
+  specialRequests?: string;
   checkIn: string;
   checkOut: string;
   guests: number;
@@ -29,6 +32,9 @@ const BookingSchema: Schema = new Schema(
     roomId: { type: Schema.Types.ObjectId, ref: 'Room', required: true },
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     guestName: { type: String },
+    guestEmail: { type: String },
+    guestPhone: { type: String },
+    specialRequests: { type: String },
     checkIn: { type: String, required: true },
     checkOut: { type: String, required: true },
     guests: { type: Number, required: true },

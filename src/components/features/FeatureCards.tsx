@@ -1,22 +1,20 @@
-'use client';
-
 import React from 'react';
 
 const features = [
   {
     icon: 'spark',
-    title: 'Unique Properties',
-    description: 'Every homestay is handpicked for its unique character and quality.',
+    title: 'Bất động sản độc đáo',
+    description: 'Mỗi homestay đều được tuyển chọn kỹ lưỡng về tính độc đáo và chất lượng.',
   },
   {
     icon: 'headset_mic',
-    title: '24/7 Support',
-    description: 'Our dedicated team is always here to help, anytime you need.',
+    title: 'Hỗ trợ 24/7',
+    description: 'Đội ngũ tận tâm của chúng tôi luôn sẵn sàng hỗ trợ bạn mọi lúc.',
   },
   {
     icon: 'verified',
-    title: 'Best Price Guarantee',
-    description: 'We ensure you get the best value for your stay, without any hidden fees.',
+    title: 'Đảm bảo giá tốt nhất',
+    description: 'Chúng tôi đảm bảo bạn nhận được giá trị tốt nhất cho kỳ nghỉ, không có phí ẩn.',
   },
 ];
 
@@ -26,10 +24,10 @@ const FeatureCards = () => {
       <div className="max-w-[1200px] mx-auto w-full">
         <div className="flex flex-col gap-4 mb-10">
           <h1 className="text-primary text-3xl font-black uppercase tracking-tight sm:text-4xl max-w-[720px]">
-            THE STAYEASY DIFFERENCE
+            SỰ KHÁC BIỆT CỦA STAYEASY
           </h1>
           <p className="text-primary/70 text-base font-normal leading-normal max-w-[720px]">
-            Discover why booking with us makes your travel experience seamless and memorable.
+            Khám phá lý do đặt phòng với chúng tôi giúp trải nghiệm du lịch của bạn trở nên liền mạch và đáng nhớ.
           </p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

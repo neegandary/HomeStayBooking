@@ -34,7 +34,7 @@ export default async function Home() {
         <div className="max-w-[1200px] mx-auto">
           <div className="mb-10">
             <h2 className="text-primary text-3xl font-black uppercase tracking-tight">
-              OUR FEATURED ROOMS
+              PHÒNG NỔI BẬT
             </h2>
           </div>
           <RoomGrid rooms={featuredRooms} />
@@ -43,7 +43,7 @@ export default async function Home() {
               href="/rooms"
               className="inline-flex items-center gap-2 text-primary font-bold hover:text-action transition-colors"
             >
-              View all rooms
+              Xem tất cả phòng
               <span className="material-symbols-outlined">arrow_forward</span>
             </Link>
           </div>

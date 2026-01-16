@@ -1,6 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { AxiosError } from 'axios';
+import api from '@/lib/axios';
 import PromotionTable from '@/components/admin/PromotionTable';
 import PromotionModal from '@/components/admin/PromotionModal';
 
@@ -28,11 +30,8 @@ export default function PromotionsPage() {
 
   const fetchPromotions = async () => {
     try {
-      const res = await fetch('/api/promotions');
-      if (res.ok) {
-        const data = await res.json();
-        setPromotions(data);
-      }
+      const { data } = await api.get('/promotions');
+      setPromotions(data);
     } catch (error) {
       console.error('Failed to fetch promotions:', error);
     } finally {
@@ -58,10 +57,8 @@ export default function PromotionsPage() {
     if (!confirm('Are you sure you want to delete this promotion?')) return;
 
     try {
-      const res = await fetch(`/api/promotions/${id}`, { method: 'DELETE' });
-      if (res.ok) {
-        fetchPromotions();
-      }
+      await api.delete(`/promotions/${id}`);
+      fetchPromotions();
     } catch (error) {
       console.error('Failed to delete promotion:', error);
     }
@@ -69,14 +66,8 @@ export default function PromotionsPage() {
 
   const handleToggleActive = async (promotion: Promotion) => {
     try {
-      const res = await fetch(`/api/promotions/${promotion.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ active: !promotion.active }),
-      });
-      if (res.ok) {
-        fetchPromotions();
-      }
+      await api.put(`/promotions/${promotion.id}`, { active: !promotion.active });
+      fetchPromotions();
     } catch (error) {
       console.error('Failed to toggle promotion:', error);
     }
@@ -84,26 +75,18 @@ export default function PromotionsPage() {
 
   const handleSave = async (data: Partial<Promotion>) => {
     try {
-      const url = editingPromotion
-        ? `/api/promotions/${editingPromotion.id}`
-        : '/api/promotions';
-      const method = editingPromotion ? 'PUT' : 'POST';
-
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-
-      if (res.ok) {
-        setIsModalOpen(false);
-        fetchPromotions();
+      if (editingPromotion) {
+        await api.put(`/promotions/${editingPromotion.id}`, data);
       } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to save promotion');
+        await api.post('/promotions', data);
       }
+      setIsModalOpen(false);
+      fetchPromotions();
     } catch (error) {
       console.error('Failed to save promotion:', error);
+      const axiosError = error as AxiosError<{ error: string }>;
+      const errorMessage = axiosError.response?.data?.error || 'Failed to save promotion';
+      alert(errorMessage);
     }
   };
 

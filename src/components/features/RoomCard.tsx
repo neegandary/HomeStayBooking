@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, memo } from 'react';
 import Link from 'next/link';
 import { Room } from '@/types/room';
 import { ImageCarousel } from '@/components/ui/ImageCarousel';
@@ -9,7 +9,7 @@ interface RoomCardProps {
   room: Room;
 }
 
-const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
+const RoomCard: React.FC<RoomCardProps> = memo(({ room }) => {
   const [isHovered, setIsHovered] = useState(false);
   const roomId = room._id || room.id;
 
@@ -28,7 +28,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
           className="h-full transition-transform duration-500 group-hover:scale-110 [&_.swiper-pagination]:z-30 [&_.swiper-pagination]:relative"
         />
         <div className="absolute top-4 right-4 z-10 bg-primary/90 backdrop-blur-md px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest text-white shadow-xl shadow-black/10">
-          {room.capacity} Guests
+          {room.capacity} Khách
         </div>
       </div>
 
@@ -44,7 +44,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
 
         <div className="mb-4">
           <span className="text-secondary font-black text-2xl">{room.price.toLocaleString('vi-VN')}đ</span>
-          <span className="text-primary/40 text-xs font-bold uppercase tracking-widest ml-2">/ night</span>
+          <span className="text-primary/40 text-xs font-bold uppercase tracking-widest ml-2">/ đêm</span>
         </div>
 
         <p className="text-primary/60 text-sm mb-6 line-clamp-2 flex-1 leading-relaxed">
@@ -59,7 +59,7 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
             </span>
           ))}
           {room.amenities.length > 3 && (
-            <span className="text-primary/30 text-[9px] font-black uppercase tracking-widest py-1">+{room.amenities.length - 3} more</span>
+            <span className="text-primary/30 text-[9px] font-black uppercase tracking-widest py-1">+{room.amenities.length - 3} nữa</span>
           )}
         </div>
 
@@ -71,18 +71,20 @@ const RoomCard: React.FC<RoomCardProps> = ({ room }) => {
             aria-hidden="true"
             className="flex-1 text-center py-3 px-4 rounded-xl border-2 border-primary/10 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-[0.98]"
           >
-            Details
+            Chi tiết
           </Link>
           <Link
             href={`/rooms/${roomId}/book`}
             className="flex-1 text-center py-3 px-4 rounded-xl bg-action text-white font-black text-xs uppercase tracking-widest hover:bg-tiger-orange transition-all shadow-lg shadow-action/20 active:scale-[0.98]"
           >
-            Book Now
+            Đặt ngay
           </Link>
         </div>
       </div>
     </div>
   );
-};
+});
+
+RoomCard.displayName = 'RoomCard';
 
 export default RoomCard;

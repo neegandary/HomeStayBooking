@@ -12,7 +12,7 @@ const AdminSidebar = () => {
 
   const navItems = [
     {
-      name: 'Overview',
+      name: 'Tổng quan',
       href: '/admin',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -30,7 +30,7 @@ const AdminSidebar = () => {
       ),
     },
     {
-      name: 'Rooms',
+      name: 'Phòng',
       href: '/admin/rooms',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -39,7 +39,7 @@ const AdminSidebar = () => {
       ),
     },
     {
-      name: 'Bookings',
+      name: 'Đặt phòng',
       href: '/admin/bookings',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,7 +48,7 @@ const AdminSidebar = () => {
       ),
     },
     {
-      name: 'Promotions',
+      name: 'Khuyến mãi',
       href: '/admin/promotions',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -120,7 +120,7 @@ const AdminSidebar = () => {
           <div className="flex-1 min-w-0">
             <p className="font-bold text-primary text-sm truncate">{user?.name}</p>
             <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest">
-              Administrator
+              Quản trị viên
             </p>
           </div>
         </div>
@@ -133,7 +133,7 @@ const AdminSidebar = () => {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Back to Site
+          Về trang chủ
         </Link>
 
         {/* Logout */}
@@ -144,7 +144,7 @@ const AdminSidebar = () => {
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          Logout
+          Đăng xuất
         </button>
       </div>
     </>
@@ -194,9 +194,11 @@ const AdminSidebar = () => {
       </div>
 
       {/* Desktop Sidebar */}
-      <div className="hidden lg:flex w-72 bg-white border-r border-primary/5 flex-col h-screen sticky top-0">
+      <div className="hidden lg:flex w-72 bg-white border-r border-primary/5 flex-col h-screen fixed top-0 left-0 z-30">
         <NavContent />
       </div>
+      {/* Spacer for fixed sidebar */}
+      <div className="hidden lg:block w-72 flex-shrink-0"></div>
     </>
   );
 };

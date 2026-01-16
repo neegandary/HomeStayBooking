@@ -62,7 +62,7 @@ function RoomsContent() {
       <div className="bg-white min-h-screen flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-primary/60 font-medium">Loading rooms...</p>
+          <p className="text-primary/60 font-medium">Đang tải phòng...</p>
         </div>
       </div>
     );
@@ -74,7 +74,7 @@ function RoomsContent() {
       <div className="bg-white border-b border-primary/5 py-12 px-4 shadow-xl shadow-primary/5">
         <div className="container mx-auto">
           <h1 className="text-3xl md:text-5xl font-black text-primary mb-8 text-center tracking-tight uppercase">
-            Find your next <br /> adventure
+            Tìm chuyến phiêu lưu <br /> tiếp theo của bạn
           </h1>
           <SearchBar />
         </div>
@@ -91,14 +91,14 @@ function RoomsContent() {
           <div className="flex-1">
             <div className="flex justify-between items-end mb-8 border-b border-primary/5 pb-6">
               <h2 className="text-xl font-black text-primary uppercase tracking-widest">
-                Available Rooms <span className="text-primary/20 font-black text-sm ml-3">/ {total} found</span>
+                Phòng có sẵn <span className="text-primary/20 font-black text-sm ml-3">/ {total} kết quả</span>
               </h2>
               <div className="flex items-center gap-3">
-                <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">Sort by:</span>
+                <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">Sắp xếp:</span>
                 <select className="text-[10px] font-black uppercase tracking-widest bg-transparent focus:outline-none cursor-pointer text-primary">
-                  <option>Recommended</option>
-                  <option>Price: Low to High</option>
-                  <option>Price: High to Low</option>
+                  <option>Đề xuất</option>
+                  <option>Giá: Thấp đến Cao</option>
+                  <option>Giá: Cao đến Thấp</option>
                 </select>
               </div>
             </div>

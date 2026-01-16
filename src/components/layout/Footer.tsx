@@ -15,27 +15,27 @@ export default function Footer() {
             <h3 className="font-bold text-lg">StayEasy</h3>
           </div>
           <p className="text-primary/70 text-sm max-w-sm">
-            Your perfect homestay is just a click away. Experience comfort, quality, and unforgettable memories with our curated selection of properties.
+            Homestay hoàn hảo của bạn chỉ cách một cú nhấp chuột. Trải nghiệm sự thoải mái, chất lượng và những kỷ niệm khó quên với bộ sưu tập bất động sản được tuyển chọn của chúng tôi.
           </p>
         </div>
 
         {/* Quick Links */}
         <div>
-          <h4 className="font-bold text-primary">Quick Links</h4>
+          <h4 className="font-bold text-primary">Liên kết nhanh</h4>
           <ul className="mt-4 space-y-2 text-sm">
             <li>
               <Link href="/" className="text-primary/70 hover:text-action transition-colors">
-                Home
+                Trang chủ
               </Link>
             </li>
             <li>
               <Link href="/rooms" className="text-primary/70 hover:text-action transition-colors">
-                Stays
+                Phòng
               </Link>
             </li>
             <li>
               <Link href="/about" className="text-primary/70 hover:text-action transition-colors">
-                About Us
+                Giới thiệu
               </Link>
             </li>
           </ul>
@@ -43,7 +43,7 @@ export default function Footer() {
 
         {/* Connect */}
         <div>
-          <h4 className="font-bold text-primary">Connect</h4>
+          <h4 className="font-bold text-primary">Kết nối</h4>
           <div className="flex space-x-4 mt-4">
             <a href="#" className="text-primary/70 hover:text-action transition-colors" aria-label="Facebook">
               <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
@@ -66,7 +66,7 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="border-t border-primary/10 mt-8 pt-6 text-center text-sm text-primary/60">
-        <p>&copy; {new Date().getFullYear()} StayEasy. All Rights Reserved.</p>
+        <p>&copy; {new Date().getFullYear()} StayEasy. Bảo lưu mọi quyền.</p>
       </div>
     </footer>
   );

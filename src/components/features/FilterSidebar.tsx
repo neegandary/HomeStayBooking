@@ -10,7 +10,7 @@ interface FilterSidebarProps {
 const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const amenities = ['Wifi', 'AC', 'Kitchen', 'Breakfast', 'Private Pool', 'Ocean View', 'Mountain View', 'City View'];
+  const amenities = ['Wifi', 'Điều hòa', 'Bếp', 'Bữa sáng', 'Hồ bơi riêng', 'View biển', 'View núi', 'View thành phố'];
 
   const currentPrice = searchParams.get('maxPrice') || '20000000';
   const selectedAmenities = searchParams.getAll('amenities');
@@ -47,18 +47,18 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
   return (
     <aside className={`bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5 h-fit ${className}`}>
       <div className="flex justify-between items-center mb-8">
-        <h3 className="font-black text-primary uppercase tracking-widest text-sm">Filters</h3>
+        <h3 className="font-black text-primary uppercase tracking-widest text-sm">Bộ lọc</h3>
         <button
           onClick={handleClearAll}
           className="text-[10px] font-black uppercase tracking-widest text-primary/40 hover:text-action transition-colors"
         >
-          Clear All
+          Xóa tất cả
         </button>
       </div>
 
       {/* Price Range */}
       <div className="mb-10">
-        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Max Price</h4>
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Giá tối đa</h4>
         <div className="space-y-6">
           <input
             type="range"
@@ -81,7 +81,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
 
       {/* Amenities */}
       <div className="mb-10">
-        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Amenities</h4>
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Tiện nghi</h4>
         <div className="space-y-4">
           {amenities.map((amenity) => (
             <label key={amenity} className="flex items-center group cursor-pointer">
@@ -103,7 +103,7 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
 
       {/* Capacity */}
       <div>
-        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Min. Capacity</h4>
+        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Sức chứa tối thiểu</h4>
         <div className="grid grid-cols-4 gap-2">
           {[1, 2, 4, 6].map((num) => (
             <button

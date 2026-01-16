@@ -19,116 +19,118 @@ export default function RoomTable({
 }: RoomTableProps) {
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
 
+  // Get room type based on capacity
+  const getRoomType = (capacity: number) => {
+    if (capacity <= 1) return 'Single';
+    if (capacity <= 2) return 'Double';
+    if (capacity <= 4) return 'Suite';
+    return 'Family';
+  };
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-primary/5 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-primary/5 bg-primary/[0.02]">
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
+    <div className="w-full">
+      <div className="overflow-hidden rounded-lg border border-primary/10  bg-white  shadow-sm">
+        <table className="min-w-full divide-y divide-primary/10 ">
+          <thead className="bg-primary/[0.02] ">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Room
               </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+                Room Type
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Price
               </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Capacity
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
+                Max Occupancy
               </th>
-              <th className="text-left px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-muted uppercase tracking-wider">
                 Status
               </th>
-              <th className="text-right px-6 py-4 text-xs font-bold text-primary/40 uppercase tracking-widest">
-                Actions
+              <th scope="col" className="relative px-6 py-3">
+                <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="bg-white  divide-y divide-primary/10 ">
             {rooms.map((room) => (
-              <tr key={room.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors">
-                <td className="px-6 py-4">
+              <tr key={room.id} className="hover:bg-primary/[0.02] ">
+                <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl overflow-hidden bg-primary/10 flex-shrink-0 relative">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-primary/5 dark:bg-primary/20 flex-shrink-0 relative">
                       {room.images[0] && (
                         <Image
                           src={room.images[0]}
                           alt={room.name}
                           fill
-                          sizes="48px"
+                          sizes="40px"
                           className="object-cover"
                         />
                       )}
                     </div>
-                    <div>
-                      <p className="font-bold text-primary">{room.name}</p>
-                      <p className="text-xs text-primary/60 truncate max-w-[200px]">
-                        {room.amenities.slice(0, 3).join(', ')}
-                      </p>
-                    </div>
+                    <span className="text-sm font-medium text-foreground">
+                      {room.name}
+                    </span>
                   </div>
                 </td>
-                <td className="px-6 py-4">
-                  <p className="font-bold text-primary">{room.price.toLocaleString('vi-VN')}đ</p>
-                  <p className="text-xs text-primary/60">per night</p>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+                  {getRoomType(room.capacity)}
                 </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-primary/80">{room.capacity} guests</p>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+                  {room.price.toLocaleString('vi-VN')}đ
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-muted">
+                  {room.capacity}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm">
                   <button
                     onClick={() => room.id && onToggleAvailability(room.id, !room.available)}
-                    className={`inline-flex px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors ${
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-colors ${
                       room.available
-                        ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
-                        : 'bg-red-100 text-red-700 hover:bg-red-200'
+                        ? 'bg-success/10 text-success hover:bg-success/20'
+                        : 'bg-action/10 text-action hover:bg-action/20'
                     }`}
                   >
                     {room.available ? 'Available' : 'Unavailable'}
                   </button>
                 </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <div className="flex items-center justify-end gap-3">
                     <button
                       onClick={() => onEdit(room)}
-                      className="p-2 rounded-lg hover:bg-primary/5 text-primary/60 hover:text-primary transition-colors"
+                      className="text-muted hover:text-primary transition-colors"
                       title="Edit"
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      <span className="material-symbols-outlined text-xl">edit</span>
                     </button>
                     {deleteConfirm === room.id ? (
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-2">
                         <button
                           onClick={() => {
                             if (room.id) onDelete(room.id);
                             setDeleteConfirm(null);
                           }}
-                          className="p-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors"
-                          title="Confirm"
+                          className="text-white bg-action hover:bg-action/90 rounded-md p-1 transition-colors"
+                          title="Confirm Delete"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
+                          <span className="material-symbols-outlined text-lg">check</span>
                         </button>
                         <button
                           onClick={() => setDeleteConfirm(null)}
-                          className="p-2 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                          className="text-foreground bg-primary/10 hover:bg-primary/20 rounded-md p-1 transition-colors"
                           title="Cancel"
                         >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
+                          <span className="material-symbols-outlined text-lg">close</span>
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => setDeleteConfirm(room.id ?? null)}
-                        className="p-2 rounded-lg hover:bg-red-50 text-primary/60 hover:text-red-500 transition-colors"
+                        className="text-muted hover:text-action transition-colors"
                         title="Delete"
                       >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
+                        <span className="material-symbols-outlined text-xl">delete</span>
                       </button>
                     )}
                   </div>
@@ -140,8 +142,9 @@ export default function RoomTable({
       </div>
 
       {rooms.length === 0 && (
-        <div className="p-12 text-center">
-          <p className="text-primary/60">No rooms found.</p>
+        <div className="p-12 text-center bg-white dark:bg-background-dark rounded-lg border border-primary/10 dark:border-primary/20">
+          <span className="material-symbols-outlined text-4xl text-muted mb-2">bed</span>
+          <p className="text-muted">No rooms found.</p>
         </div>
       )}
     </div>

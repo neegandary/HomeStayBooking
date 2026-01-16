@@ -24,7 +24,7 @@ function LoginForm() {
       window.location.href = redirect; // Using window.location to ensure fresh state
     } catch (err: unknown) {
       const error = err as { response?: { data?: { error?: string } } };
-      setError(error.response?.data?.error || 'Failed to login. Please check your credentials.');
+      setError(error.response?.data?.error || 'Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập của bạn.');
     } finally {
       setIsLoading(false);
     }
@@ -33,8 +33,8 @@ function LoginForm() {
   return (
     <div className="bg-white p-8 rounded-3xl shadow-2xl shadow-primary/5 border border-primary/5">
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Welcome Back</h1>
-        <p className="text-primary/50 font-medium text-sm">Log in to manage your homestay experiences.</p>
+        <h1 className="text-3xl font-black text-primary tracking-tight mb-2">Chào mừng trở lại</h1>
+        <p className="text-primary/50 font-medium text-sm">Đăng nhập để quản lý trải nghiệm homestay của bạn.</p>
       </div>
 
       {error && (
@@ -48,7 +48,7 @@ function LoginForm() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Email Address</label>
+          <label htmlFor="email" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest mb-2">Địa chỉ Email</label>
           <input
             id="email"
             type="email"
@@ -62,8 +62,8 @@ function LoginForm() {
 
         <div>
           <div className="flex justify-between items-center mb-2">
-            <label htmlFor="password" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">Password</label>
-            <Link href="#" className="text-[10px] font-black text-primary hover:text-action transition-colors">Forgot password?</Link>
+            <label htmlFor="password" className="block text-[10px] font-black text-primary/40 uppercase tracking-widest">Mật khẩu</label>
+            <Link href="#" className="text-[10px] font-black text-primary hover:text-action transition-colors">Quên mật khẩu?</Link>
           </div>
           <input
             id="password"
@@ -81,24 +81,24 @@ function LoginForm() {
           disabled={isLoading}
           className="w-full bg-primary text-white py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-deep-space transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
         >
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
       </form>
 
       <div className="mt-10 text-center">
         <p className="text-sm text-primary/50 font-medium">
-          Don&apos;t have an account?{' '}
+          Chưa có tài khoản?{' '}
           <Link href="/register" className="text-primary font-black hover:text-action transition-colors underline decoration-primary/10 underline-offset-8">
-            Create account
+            Tạo tài khoản
           </Link>
         </p>
       </div>
 
       <div className="mt-8 pt-8 border-t border-primary/5">
         <div className="bg-primary/5 p-4 rounded-xl text-[10px] text-primary/40 leading-relaxed italic">
-          <span className="font-black text-primary block mb-1">Demo Credentials:</span>
+          <span className="font-black text-primary block mb-1">Thông tin đăng nhập Demo:</span>
           Email: test@example.com <br />
-          Password: password
+          Mật khẩu: password
         </div>
       </div>
     </div>
