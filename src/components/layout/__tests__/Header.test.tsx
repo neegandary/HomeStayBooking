@@ -1,19 +1,27 @@
 'use client';
 
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { useRouter, usePathname } from 'next/navigation';
 import Header from '../Header';
 import { useAuth } from '@/hooks/useAuth';
+
+// Type definitions for mock props
+interface MockLinkProps {
+  children: React.ReactNode;
+  href: string;
+  className?: string;
+}
 
 // Mock dependencies
 jest.mock('next/navigation');
 jest.mock('@/hooks/useAuth');
 jest.mock('next/link', () => {
-  return ({ children, href, className }: any) => {
+  const MockLink = ({ children, href, className }: MockLinkProps) => {
     return <a href={href} className={className}>{children}</a>;
   };
+  MockLink.displayName = 'MockLink';
+  return MockLink;
 });
 
 describe('Header Component - Hamburger Menu with User Avatar', () => {
