@@ -1,11 +1,20 @@
 'use client';
 
 import React, { useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Room } from '@/types/room';
 import { BookingFormData } from '@/types/booking';
-import DateRangePicker from '@/components/ui/DateRangePicker';
-import PromoCodeInput from '@/components/features/PromoCodeInput';
 import { useBookingPrice } from '@/hooks/useBookingPrice';
+
+// Use next/dynamic for code splitting heavy components
+const DateRangePicker = dynamic(
+  () => import('@/components/ui/DateRangePicker'),
+  { loading: () => <div className="h-64 bg-primary/5 animate-pulse rounded-xl" /> }
+);
+const PromoCodeInput = dynamic(
+  () => import('@/components/features/PromoCodeInput'),
+  { loading: () => <div className="h-20 bg-primary/5 animate-pulse rounded-xl" /> }
+);
 
 interface BookingFormProps {
   room: Room;

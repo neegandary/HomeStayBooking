@@ -16,17 +16,25 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB();
 
-    // Get total revenue from confirmed/completed/checked-in bookings
-    const revenueResult = await Booking.aggregate([
-      { $match: { status: { $in: ['confirmed', 'completed', 'checked-in'] } } },
-      { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+    // Parallelize independent database queries
+    const [revenueResult, bookingStats, totalRoomsResult, availableRoomsResult] = await Promise.all([
+      // Get total revenue from confirmed/completed/checked-in bookings
+      Booking.aggregate([
+        { $match: { status: { $in: ['confirmed', 'completed', 'checked-in'] } } },
+        { $group: { _id: null, total: { $sum: '$totalPrice' } } }
+      ]),
+      // Get booking counts by status
+      Booking.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } }
+      ]),
+      // Get total rooms count
+      Room.countDocuments(),
+      // Get available rooms count
+      Room.countDocuments({ available: true })
     ]);
+
     const totalRevenue = revenueResult[0]?.total || 0;
 
-    // Get booking counts by status
-    const bookingStats = await Booking.aggregate([
-      { $group: { _id: '$status', count: { $sum: 1 } } }
-    ]);
     const bookingCounts = bookingStats.reduce((acc: Record<string, number>, item: { _id: string; count: number }) => {
       acc[item._id] = item.count;
       return acc;
@@ -34,18 +42,26 @@ export async function GET(request: NextRequest) {
 
     const activeBookings = (bookingCounts['confirmed'] || 0) + (bookingCounts['checked-in'] || 0);
     const totalBookings = Object.values(bookingCounts).reduce<number>((a, b) => a + (b as number), 0);
+    const totalRooms = totalRoomsResult;
+    const availableRooms = availableRoomsResult;
 
-    // Get total rooms
-    const totalRooms = await Room.countDocuments();
-    const availableRooms = await Room.countDocuments({ available: true });
-
-    // Calculate occupancy rate (rooms currently occupied / total rooms)
+    // Calculate occupancy rate and get recent bookings in parallel
     const today = new Date().toISOString().split('T')[0];
-    const occupiedRoomsToday = await Booking.distinct('roomId', {
-      status: { $in: ['confirmed', 'checked-in'] },
-      checkIn: { $lte: today },
-      checkOut: { $gte: today }
-    });
+    const [occupiedRoomsToday, recentBookings] = await Promise.all([
+      // Get occupied rooms for occupancy rate
+      Booking.distinct('roomId', {
+        status: { $in: ['confirmed', 'checked-in'] },
+        checkIn: { $lte: today },
+        checkOut: { $gte: today }
+      }),
+      // Get recent bookings for activity feed
+      Booking.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate('roomId', 'name')
+        .lean()
+    ]);
+
     const occupancyRate = totalRooms > 0
       ? Math.round((occupiedRoomsToday.length / totalRooms) * 100)
       : 0;
@@ -80,13 +96,6 @@ export async function GET(request: NextRequest) {
         value: dayData ? Math.round(dayData.revenue / 1000000) : 0 // Convert to millions
       };
     });
-
-    // Get recent bookings for activity feed
-    const recentBookings = await Booking.find()
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .populate('roomId', 'name')
-      .lean();
 
     const recentActivity = recentBookings.map((booking, index) => ({
       id: index + 1,

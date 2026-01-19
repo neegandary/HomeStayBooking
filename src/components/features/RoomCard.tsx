@@ -3,7 +3,17 @@
 import React, { useState, memo } from 'react';
 import Link from 'next/link';
 import { Room } from '@/types/room';
-import { ImageCarousel } from '@/components/ui/ImageCarousel';
+import dynamic from 'next/dynamic';
+
+// Use next/dynamic with SSR disabled for heavy carousel component
+// Note: .then(mod => mod.ImageCarousel) is required for named exports
+const ImageCarousel = dynamic(
+  () => import('@/components/ui/ImageCarousel').then(mod => mod.ImageCarousel),
+  {
+    ssr: false,
+    loading: () => <div className="h-56 md:h-64 bg-primary/5 animate-pulse" />
+  }
+);
 
 interface RoomCardProps {
   room: Room;

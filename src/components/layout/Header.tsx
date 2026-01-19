@@ -2,13 +2,33 @@
 
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
-import { useState } from 'react';
+import { useState, useCallback, memo } from 'react';
 import { usePathname } from 'next/navigation';
 
-export default function Header() {
+// Memoized toggle function to prevent unnecessary re-renders
+function useToggle(initialValue = false) {
+  const [value, setValue] = useState(initialValue);
+  const toggle = useCallback(() => setValue(v => !v), []);
+  const setFalse = useCallback(() => setValue(false), []);
+  return [value, toggle, setFalse, setValue] as const;
+}
+
+const HeaderContent = memo(function HeaderContent() {
   const { user, isAuthenticated, logout } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, toggleMenu, setMenuFalse] = useToggle(false);
   const pathname = usePathname();
+
+  // Memoize logout handler to prevent re-renders
+  const handleLogout = useCallback(() => {
+    logout();
+    setMenuFalse();
+  }, [logout, setMenuFalse]);
+
+  // Memoize menu item click to close menu
+  const handleMenuClick = useCallback((e: React.MouseEvent) => {
+    (e.target as HTMLElement).closest('a')?.click();
+    setMenuFalse();
+  }, [setMenuFalse]);
 
   // Hide header on admin and dashboard routes
   if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard')) {
@@ -44,7 +64,7 @@ export default function Header() {
               <>
                 {/* Unified Profile Menu Button */}
                 <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  onClick={toggleMenu}
                   className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-primary/5 transition-all group"
                   aria-label="Toggle profile menu"
                 >
@@ -78,7 +98,7 @@ export default function Header() {
                       <Link
                         href="/dashboard"
                         className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary/5 transition-colors"
-                        onClick={() => setMobileMenuOpen(false)}
+                        onClick={setMenuFalse}
                       >
                         <span className="material-symbols-outlined text-xl">dashboard</span>
                         Bảng điều khiển
@@ -87,7 +107,7 @@ export default function Header() {
                         <Link
                           href="/admin"
                           className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-action hover:bg-primary/5 transition-colors"
-                          onClick={() => setMobileMenuOpen(false)}
+                          onClick={setMenuFalse}
                         >
                           <span className="material-symbols-outlined text-xl">admin_panel_settings</span>
                           Quản trị
@@ -95,7 +115,7 @@ export default function Header() {
                       )}
                       <div className="border-t border-primary/10 my-2"></div>
                       <button
-                        onClick={() => { logout(); setMobileMenuOpen(false); }}
+                        onClick={handleLogout}
                         className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors w-full text-left"
                       >
                         <span className="material-symbols-outlined text-xl">logout</span>
@@ -116,7 +136,7 @@ export default function Header() {
 
                 {/* Mobile Menu Button for non-authenticated users */}
                 <button
-                  onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                  onClick={toggleMenu}
                   className="md:hidden p-2 rounded-lg hover:bg-primary/5 transition-colors"
                   aria-label="Toggle menu"
                 >
@@ -132,22 +152,19 @@ export default function Header() {
         {/* Mobile Menu for non-authenticated users */}
         {mobileMenuOpen && !isAuthenticated && (
           <div className="md:hidden py-4 border-t border-primary/10">
-            <nav className="flex flex-col gap-4">
-              <Link href="/" className="text-primary text-sm font-medium hover:text-action transition-colors" onClick={() => setMobileMenuOpen(false)}>Trang chủ</Link>
-              <Link href="/rooms" className="text-primary text-sm font-medium hover:text-action transition-colors" onClick={() => setMobileMenuOpen(false)}>Phòng</Link>
-              <Link href="/about" className="text-primary text-sm font-medium hover:text-action transition-colors" onClick={() => setMobileMenuOpen(false)}>Giới thiệu</Link>
+            <nav className="flex flex-col gap-4" onClick={handleMenuClick}>
+              <Link href="/">Trang chủ</Link>
+              <Link href="/rooms">Phòng</Link>
+              <Link href="/about">Giới thiệu</Link>
               <div className="border-t border-primary/10 my-2"></div>
-              <Link
-                href="/login"
-                className="text-primary text-sm font-medium hover:text-action transition-colors"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Đăng nhập
-              </Link>
+              <Link href="/login">Đăng nhập</Link>
             </nav>
           </div>
         )}
       </div>
     </header>
   );
-}
+});
+
+// Export memoized component
+export default HeaderContent;

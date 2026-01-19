@@ -1,15 +1,24 @@
 'use client';
 
 import React, { useEffect, useState, use } from 'react';
+import dynamic from 'next/dynamic';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Room } from '@/types/room';
 import { BookingFormData } from '@/types/booking';
 import { bookingService } from '@/lib/bookingService';
 import { useAuth } from '@/hooks/useAuth';
-import DateRangePicker from '@/components/ui/DateRangePicker';
-import PromoCodeInput from '@/components/features/PromoCodeInput';
 import { useBookingPrice } from '@/hooks/useBookingPrice';
+
+// Use next/dynamic for code splitting heavy components
+const DateRangePicker = dynamic(
+  () => import('@/components/ui/DateRangePicker'),
+  { loading: () => <div className="h-64 bg-primary/5 animate-pulse rounded-xl" /> }
+);
+const PromoCodeInput = dynamic(
+  () => import('@/components/features/PromoCodeInput'),
+  { loading: () => <div className="h-20 bg-primary/5 animate-pulse rounded-xl" /> }
+);
 
 interface BookPageProps {
   params: Promise<{ id: string }>;
@@ -47,15 +56,20 @@ export default function BookPage({ params }: BookPageProps) {
 
   const finalTotal = Math.max(0, total - promoDiscount);
 
+  // Parallel fetch room and availability to avoid waterfall
   useEffect(() => {
-    const fetchRoom = async () => {
+    const fetchRoomAndAvailability = async () => {
       try {
-        const response = await fetch(`/api/rooms/${id}`);
-        if (response.ok) {
-          const roomData = await response.json();
+        // Start both fetches in parallel
+        const [roomRes, availRes] = await Promise.all([
+          fetch(`/api/rooms/${id}`),
+          bookingService.getAvailability(id)
+        ]);
+
+        if (roomRes.ok) {
+          const roomData = await roomRes.json();
           setRoom(roomData);
           setFormData(prev => ({ ...prev, roomId: roomData.id || id }));
-          const availRes = await bookingService.getAvailability(id);
           setBookedDates(availRes.data.bookedDates);
         } else {
           router.push('/rooms');
@@ -65,7 +79,7 @@ export default function BookPage({ params }: BookPageProps) {
         router.push('/rooms');
       }
     };
-    fetchRoom();
+    fetchRoomAndAvailability();
   }, [id, router]);
 
   useEffect(() => {

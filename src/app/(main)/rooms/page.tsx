@@ -50,12 +50,12 @@ function RoomsContent() {
     fetchRooms();
   }, [fetchRooms]);
 
-  // Handle page change
-  const handlePageChange = (newPage: number) => {
+  // Handle page change - memoized to avoid re-creation
+  const handlePageChange = useCallback((newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', newPage.toString());
     router.push(`/rooms?${params.toString()}`);
-  };
+  }, [searchParams, router]);
 
   if (loading) {
     return (
