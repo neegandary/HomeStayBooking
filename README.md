@@ -14,19 +14,19 @@
 ## Tính năng
 
 ### Người dùng
-- 🔐 Đăng ký / Đăng nhập với JWT
-- 🏠 Tìm kiếm và lọc phòng theo giá, sức chứa, tiện nghi
-- 📅 Đặt phòng với chọn ngày check-in/check-out
-- 💳 Thanh toán qua VietQR/VNPay
-- 📱 Mã QR check-in
-- 👤 Quản lý profile và lịch sử đặt phòng
+- Đăng ký / Đăng nhập với JWT
+- Tìm kiếm và lọc phòng theo giá, sức chứa, tiện nghi
+- Đặt phòng với chọn ngày check-in/check-out
+- Thanh toán qua VietQR/VNPay
+- Mã QR check-in
+- Quản lý profile và lịch sử đặt phòng
 
 ### Admin
-- 📊 Dashboard thống kê doanh thu, đặt phòng
-- 🛏️ Quản lý phòng (CRUD)
-- 📋 Quản lý đặt phòng
-- 🎫 Quản lý khuyến mãi
-- 📷 Quét QR check-in khách
+- Dashboard thống kê doanh thu, đặt phòng
+- Quản lý phòng (CRUD)
+- Quản lý đặt phòng
+- Quản lý khuyến mãi
+- Quét QR check-in khách
 
 ## Cài đặt
 
