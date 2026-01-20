@@ -7,7 +7,7 @@
 - **Frontend:** Next.js 15.5, React 19, Tailwind CSS 4
 - **Backend:** Next.js API Routes, MongoDB, Mongoose
 - **Authentication:** JWT (jose), bcryptjs
-- **Payment:** VietQR, VNPay, SePay webhook
+- **Payment:** VNPay Sandbox
 - **UI Components:** Swiper, React DatePicker, QRCode.react
 - **Testing:** Jest, React Testing Library
 
@@ -17,7 +17,7 @@
 - Đăng ký / Đăng nhập với JWT
 - Tìm kiếm và lọc phòng theo giá, sức chứa, tiện nghi
 - Đặt phòng với chọn ngày check-in/check-out
-- Thanh toán qua VietQR/VNPay
+- Thanh toán qua VNPay Sandbox
 - Mã QR check-in
 - Quản lý profile và lịch sử đặt phòng
 
