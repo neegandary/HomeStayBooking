@@ -4,7 +4,7 @@ import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { generateTokens } from '@/lib/auth';
 import { rateLimiters, getClientIP } from '@/lib/ratelimit';
-import { registerSchema } from '@/lib/validations';
+import { registerSchema, getFirstErrorMessage } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
@@ -28,8 +28,9 @@ export async function POST(request: Request) {
     // Validate input with Zod
     const validation = registerSchema.safeParse(body);
     if (!validation.success) {
+      const errorMsg = getFirstErrorMessage(validation.error.flatten());
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.flatten() },
+        { error: errorMsg },
         { status: 400 }
       );
     }

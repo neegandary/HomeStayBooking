@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format } from 'date-fns';
 
+// Storage key for search params
+const SEARCH_PARAMS_KEY = 'stayeasy_search_params';
+
 const SearchBar = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [checkIn, setCheckIn] = useState<Date | null>(
@@ -18,6 +20,29 @@ const SearchBar = () => {
   );
   const [guests, setGuests] = useState(searchParams.get('guests') || '1');
 
+  // Restore from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem(SEARCH_PARAMS_KEY);
+      if (saved) {
+        try {
+          const params = JSON.parse(saved);
+          if (params.checkIn && !searchParams.get('checkIn')) {
+            setCheckIn(new Date(params.checkIn));
+          }
+          if (params.checkOut && !searchParams.get('checkOut')) {
+            setCheckOut(new Date(params.checkOut));
+          }
+          if (params.guests && !searchParams.get('guests')) {
+            setGuests(params.guests);
+          }
+        } catch (e) {
+          console.error('Failed to restore search params:', e);
+        }
+      }
+    }
+  }, []);
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
@@ -25,7 +50,18 @@ const SearchBar = () => {
     if (checkOut) params.set('checkOut', format(checkOut, 'yyyy-MM-dd'));
     if (guests) params.set('guests', guests);
 
-    router.push(`/rooms?${params.toString()}`);
+    // Save to sessionStorage for persistence across pages
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(SEARCH_PARAMS_KEY, JSON.stringify({
+        checkIn: checkIn?.toISOString(),
+        checkOut: checkOut?.toISOString(),
+        guests,
+      }));
+    }
+
+    // Shallow navigation - update URL without full page reload
+    window.history.pushState(null, '', `/rooms?${params.toString()}`);
+    window.dispatchEvent(new Event('shallow-navigation'));
   };
 
   return (

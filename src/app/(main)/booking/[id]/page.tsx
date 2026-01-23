@@ -2,8 +2,10 @@
 
 import React, { useEffect, useState, use } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import { bookingService } from '@/lib/bookingService';
+import { vnpay } from '@/lib/vnpay';
 import { Booking } from '@/types/booking';
 import { Room } from '@/types/room';
 
@@ -11,11 +13,46 @@ interface ConfirmationPageProps {
   params: Promise<{ id: string }>;
 }
 
+// Status configurations
+const statusConfig: Record<string, { bg: string; title: string; message: string; icon: string }> = {
+  pending: {
+    bg: 'bg-yellow-500',
+    title: 'Chờ thanh toán',
+    message: 'Vui lòng hoàn tất thanh toán để xác nhận đặt phòng.',
+    icon: 'pending',
+  },
+  confirmed: {
+    bg: 'bg-secondary',
+    title: 'Đặt phòng đã xác nhận!',
+    message: 'Chúng tôi đã gửi email xác nhận đến {email}.',
+    icon: 'check_circle',
+  },
+  'checked-in': {
+    bg: 'bg-green-600',
+    title: 'Đã nhận phòng!',
+    message: 'Chúc bạn có kỳ nghỉ tuyệt vời!',
+    icon: 'login',
+  },
+  completed: {
+    bg: 'bg-primary',
+    title: 'Đã hoàn thành',
+    message: 'Cảm ơn bạn đã sử dụng dịch vụ. Hẹn gặp lại!',
+    icon: 'verified',
+  },
+  cancelled: {
+    bg: 'bg-red-500',
+    title: 'Đã hủy',
+    message: 'Đặt phòng này đã bị hủy.',
+    icon: 'cancel',
+  },
+};
+
 export default function ConfirmationPage({ params }: ConfirmationPageProps) {
   const { id } = use(params);
   const [booking, setBooking] = useState<Booking | null>(null);
   const [room, setRoom] = useState<Room | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchBooking = async () => {
@@ -58,6 +95,24 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
     return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
+  // Handle payment for pending bookings
+  const handlePayment = async () => {
+    if (!booking) return;
+    setIsProcessing(true);
+    try {
+      const paymentUrl = vnpay.createPaymentUrl({
+        bookingId: booking.id,
+        amount: booking.totalPrice,
+        orderInfo: `Thanh toan dat phong ${room?.name || 'phong'}`,
+        ipAddr: '127.0.0.1',
+      });
+      window.location.href = paymentUrl;
+    } catch (error) {
+      console.error('Payment failed:', error);
+      setIsProcessing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-light">
@@ -78,6 +133,8 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
   }
 
   const nights = calculateNights(booking.checkIn, booking.checkOut);
+  const status = statusConfig[booking.status] || statusConfig.pending;
+  const showQRCode = ['confirmed', 'checked-in'].includes(booking.status);
 
   return (
     <div className="min-h-screen bg-background-light" style={{ color: 'var(--color-primary)' }}>
@@ -85,52 +142,87 @@ export default function ConfirmationPage({ params }: ConfirmationPageProps) {
         <div className="flex flex-col max-w-[960px] flex-1">
           {/* Main Content */}
           <main className="flex flex-col gap-8 py-8 md:py-12 px-4">
-            {/* Success Banner */}
-            <div className="bg-secondary rounded-lg p-6 text-center">
+            {/* Status Banner */}
+            <div className={`${status.bg} rounded-lg p-6 text-center`}>
+              <span className="material-symbols-outlined text-4xl text-white mb-2 block">
+                {status.icon}
+              </span>
               <h1 className="text-white tracking-tight text-[32px] font-bold leading-tight">
-                Đặt phòng của bạn đã được xác nhận!
+                {status.title}
               </h1>
               <p className="text-white/90 text-base font-normal leading-normal pt-2">
-                Chúng tôi đã gửi email xác nhận đến {booking.guestEmail || 'email của bạn'}.
+                {status.message.replace('{email}', booking.guestEmail || 'email của bạn')}
               </p>
+               {/* Payment Button for Pending */}
+            {booking.status === 'pending' && (
+              <div className=" p-6 text-center">
+                <button
+                  onClick={handlePayment}
+                  disabled={isProcessing}
+                  className="bg-action text-white px-8 py-3 rounded-lg font-bold hover:opacity-90 disabled:opacity-50"
+                >
+                  {isProcessing ? 'Đang xử lý...' : 'Thanh toán ngay'}
+                </button>
+              </div>
+            )}
             </div>
+
+           
 
             {/* Grid: QR Code + Booking Details */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {/* QR Code Section */}
-              <div className="md:col-span-1">
-                <div className="bg-white rounded-lg p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col items-center text-center">
-                  <p className="text-lg font-bold leading-tight tracking-tight">
-                    Mã QR nhận phòng
-                  </p>
-                  <div className="bg-action p-4 rounded-lg mt-4 w-full max-w-[200px] aspect-square flex items-center justify-center">
-                    <div className="bg-white p-2 rounded">
-                      <QRCodeSVG
-                        value={JSON.stringify({
-                          type: 'CHECKIN',
-                          bookingId: booking.id,
-                          roomId: booking.roomId,
-                          checkIn: booking.checkIn,
-                          checkOut: booking.checkOut,
-                          guests: booking.guests,
-                        })}
-                        size={160}
-                        level="M"
-                      />
+              {/* QR Code Section - Only show for confirmed/checked-in */}
+              {showQRCode && (
+                <div className="md:col-span-1">
+                  <div className="bg-white rounded-lg p-6 shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col items-center text-center">
+                    <p className="text-lg font-bold leading-tight tracking-tight">
+                      Mã QR nhận phòng
+                    </p>
+                    <div className="bg-action p-4 rounded-lg mt-4 w-full max-w-[200px] aspect-square flex items-center justify-center">
+                      <div className="bg-white p-2 rounded">
+                        <QRCodeSVG
+                          value={JSON.stringify({
+                            type: 'CHECKIN',
+                            bookingId: booking.id,
+                            roomId: booking.roomId,
+                            checkIn: booking.checkIn,
+                            checkOut: booking.checkOut,
+                            guests: booking.guests,
+                          })}
+                          size={160}
+                          level="M"
+                        />
+                      </div>
                     </div>
+                    <p className="text-sm font-normal leading-normal mt-4 opacity-60">
+                      Xuất trình mã này tại quầy lễ tân để nhận phòng nhanh chóng.
+                    </p>
                   </div>
-                  <p className="text-sm font-normal leading-normal mt-4 opacity-60">
-                    Xuất trình mã này tại quầy lễ tân để nhận phòng nhanh chóng.
-                  </p>
                 </div>
-              </div>
+              )}
 
               {/* Booking Details Section */}
-              <div className="md:col-span-2">
+              <div className={showQRCode ? 'md:col-span-2' : 'md:col-span-3'}>
                 <div className="bg-white rounded-lg shadow-[0_4px_12px_rgba(0,0,0,0.05)]">
-                  <h2 className="text-[22px] font-bold leading-tight tracking-tight px-6 pt-6 pb-4 border-b border-primary/10">
-                    Chi tiết đặt phòng
-                  </h2>
+                  <div className="px-6 pt-6 pb-4 border-b border-primary/10 flex items-center justify-between">
+                    <h2 className="text-[22px] font-bold leading-tight tracking-tight">
+                      Chi tiết đặt phòng
+                    </h2>
+                    {/* Status Badge */}
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                      booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                      booking.status === 'checked-in' ? 'bg-blue-100 text-blue-800' :
+                      booking.status === 'completed' ? 'bg-gray-100 text-gray-800' :
+                      'bg-red-100 text-red-800'
+                    }`}>
+                      {booking.status === 'pending' ? 'Chờ thanh toán' :
+                       booking.status === 'confirmed' ? 'Đã xác nhận' :
+                       booking.status === 'checked-in' ? 'Đã nhận phòng' :
+                       booking.status === 'completed' ? 'Hoàn thành' :
+                       'Đã hủy'}
+                    </span>
+                  </div>
                   <div className="p-6 space-y-6">
                     {/* Stay Details */}
                     <div className="flex items-start gap-4">

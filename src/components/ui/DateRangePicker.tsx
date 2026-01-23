@@ -78,17 +78,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
           isBefore(date, startOfDay(new Date())) ? "text-primary/10" : "text-primary font-bold hover:bg-primary/5 rounded-xl transition-colors"
         }
       />
-      <div className="flex justify-between p-6 bg-primary/5 rounded-2xl border border-primary/5 mt-4">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-1">Check-in</span>
-          <span className="text-sm font-black text-primary">{checkIn || 'Select date'}</span>
-        </div>
-        <div className="w-px h-10 bg-primary/10 mx-6" />
-        <div className="flex flex-col text-right">
-          <span className="text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-1">Check-out</span>
-          <span className="text-sm font-black text-primary">{checkOut || 'Select date'}</span>
-        </div>
-      </div>
+    
     </div>
   );
 };

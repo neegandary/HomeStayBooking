@@ -33,20 +33,20 @@ export default function ProfilePage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl md:text-4xl font-black text-primary tracking-tight">
-          Profile Settings
+          Hồ sơ của tôi
         </h1>
         <p className="text-primary/50 font-medium mt-1">
-          Manage your account information.
+          Quản lý thông tin tài khoản của bạn.
         </p>
       </div>
 
       {/* Status Messages */}
       {updateStatus === 'success' && (
-        <div className="bg-secondary/10 border border-secondary/20 rounded-2xl p-4 flex items-center gap-3">
-          <svg className="w-5 h-5 text-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div className="bg-green-200 border border-green-400 rounded-2xl p-4 flex items-center gap-3">
+          <svg className="w-5 h-5 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
-          <span className="text-sm font-bold text-secondary">Profile updated successfully!</span>
+          <span className="text-sm font-bold text-green-700">Cập nhật hồ sơ thành công!</span>
         </div>
       )}
 
@@ -55,7 +55,7 @@ export default function ProfilePage() {
           <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
-          <span className="text-sm font-bold text-red-500">Failed to update profile. Please try again.</span>
+          <span className="text-sm font-bold text-red-500">Cập nhật thất bại. Vui lòng thử lại.</span>
         </div>
       )}
 
@@ -63,7 +63,7 @@ export default function ProfilePage() {
 
       {/* Account Info Section */}
       <div className="bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5">
-        <h2 className="text-xl font-black text-primary tracking-tight mb-6">Account Information</h2>
+        <h2 className="text-xl font-black text-primary tracking-tight mb-6">Thông tin tài khoản</h2>
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-primary/5 rounded-2xl">
             <div className="flex items-center gap-4">
@@ -73,9 +73,9 @@ export default function ProfilePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-black text-primary">Role</p>
+                <p className="text-sm font-black text-primary">Vai trò</p>
                 <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest mt-0.5">
-                  {user.role === 'admin' ? 'Administrator' : 'User'}
+                  {user.role === 'admin' ? 'Quản trị viên' : 'Thành viên'}
                 </p>
               </div>
             </div>

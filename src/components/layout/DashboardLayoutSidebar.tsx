@@ -5,12 +5,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 
-const AdminSidebar = () => {
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+  roles?: string[]; // If specified, only show for these roles
+}
+
+const DashboardLayoutSidebar = () => {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  const navItems = [
+  const isAdmin = user?.role === 'admin';
+
+  const navItems: NavItem[] = isAdmin ? [
     {
       name: 'Tổng quan',
       href: '/admin',
@@ -56,11 +65,30 @@ const AdminSidebar = () => {
         </svg>
       ),
     },
+  ] : [
+    {
+      name: 'Đặt phòng của tôi',
+      href: '/dashboard',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+      ),
+    },
+    {
+      name: 'Hồ sơ',
+      href: '/dashboard/profile',
+      icon: (
+        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        </svg>
+      ),
+    },
   ];
 
   const isActive = (href: string) => {
-    if (href === '/admin') {
-      return pathname === '/admin';
+    if (href === '/admin' || href === '/dashboard') {
+      return pathname === href;
     }
     return pathname.startsWith(href);
   };
@@ -76,9 +104,11 @@ const AdminSidebar = () => {
             </svg>
           </div>
           <div>
-            <h1 className="font-black text-primary tracking-tight">Admin</h1>
+            <h1 className="font-black text-primary tracking-tight">
+              {isAdmin ? 'Admin' : 'StayEasy'}
+            </h1>
             <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest">
-              Dashboard
+              {isAdmin ? 'Dashboard' : user?.name || 'User'}
             </p>
           </div>
         </div>
@@ -87,7 +117,7 @@ const AdminSidebar = () => {
       {/* Navigation */}
       <div className="p-6 flex-1">
         <p className="text-[10px] text-primary/40 font-black uppercase tracking-widest mb-4 px-2">
-          Menu
+          {isAdmin ? 'Menu' : 'Tài khoản'}
         </p>
         <nav className="space-y-1">
           {navItems.map((item) => {
@@ -115,12 +145,12 @@ const AdminSidebar = () => {
       <div className="p-6 border-t border-primary/5">
         <div className="flex items-center gap-3 mb-4 px-2">
           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black">
-            {user?.name?.charAt(0) || 'A'}
+            {user?.name?.charAt(0) || 'U'}
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-bold text-primary text-sm truncate">{user?.name}</p>
             <p className="text-[10px] text-primary/40 font-bold uppercase tracking-widest">
-              Quản trị viên
+              {isAdmin ? 'Quản trị viên' : 'Thành viên'}
             </p>
           </div>
         </div>
@@ -160,7 +190,7 @@ const AdminSidebar = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
             </svg>
           </div>
-          <span className="font-black text-primary">Admin</span>
+          <span className="font-black text-primary">{isAdmin ? 'Admin' : 'StayEasy'}</span>
         </div>
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -203,4 +233,4 @@ const AdminSidebar = () => {
   );
 };
 
-export default AdminSidebar;
+export default DashboardLayoutSidebar;

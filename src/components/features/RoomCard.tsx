@@ -79,7 +79,7 @@ const RoomCard: React.FC<RoomCardProps> = memo(({ room }) => {
             href={`/rooms/${roomId}`}
             tabIndex={-1}
             aria-hidden="true"
-            className="flex-1 text-center py-3 px-4 rounded-xl border-2 border-primary/10 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-[0.98]"
+            className="flex-1 text-center py-2.5 px-3.5 rounded-xl border-2 border-primary/10 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/5 transition-all active:scale-[0.98]"
           >
             Chi tiết
           </Link>

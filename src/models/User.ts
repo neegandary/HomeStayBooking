@@ -15,7 +15,7 @@ const UserSchema: Schema = new Schema(
     email: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     password: { type: String }, // Optional for OAuth
-    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    role: { type: String, enum: ['user', 'guest', 'admin'], default: 'user' },
   },
   { timestamps: true }
 );

@@ -1,4 +1,5 @@
 import { SignJWT, jwtVerify, JWTPayload } from 'jose';
+import { UserRole } from '@/types/auth';
 
 // Secret keys - In production, use environment variables
 const ACCESS_TOKEN_SECRET = new TextEncoder().encode(
@@ -15,7 +16,7 @@ const REFRESH_TOKEN_EXPIRY = '7d';  // 7 days
 export interface TokenPayload extends JWTPayload {
   userId: string;
   email: string;
-  role: 'user' | 'admin';
+  role: UserRole;
 }
 
 /**

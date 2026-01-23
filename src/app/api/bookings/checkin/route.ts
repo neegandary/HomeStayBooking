@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import connectDB from '@/lib/db/mongodb';
 import Booking from '@/models/Booking';
-import { checkinSchema } from '@/lib/validations';
+import { checkinSchema, getFirstErrorMessage } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
@@ -10,8 +10,9 @@ export async function POST(request: Request) {
     // Validate input with Zod
     const validation = checkinSchema.safeParse(body);
     if (!validation.success) {
+      const errorMsg = getFirstErrorMessage(validation.error.flatten());
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.flatten() },
+        { error: errorMsg },
         { status: 400 }
       );
     }

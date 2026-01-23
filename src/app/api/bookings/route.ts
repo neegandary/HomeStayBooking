@@ -4,8 +4,9 @@ import Booking from '@/models/Booking';
 import Promotion from '@/models/Promotion';
 import { sepay } from '@/lib/sepay';
 import { withAuth, isAuthenticated } from '@/lib/auth';
-import { createBookingSchema } from '@/lib/validations';
+import { createBookingSchema, getFirstErrorMessage } from '@/lib/validations';
 import mongoose from 'mongoose';
+import { canBookRoom } from '@/types/auth';
 
 // Helper function to calculate discount
 function calculateDiscount(promo: { type: string; value: number; maxDiscount?: number }, orderValue: number): number {
@@ -59,13 +60,22 @@ export async function POST(request: NextRequest) {
       return authResult.error;
     }
 
+    // Check if user can make bookings (guests cannot)
+    if (!canBookRoom(authResult.user.role)) {
+      return NextResponse.json(
+        { error: 'Guest accounts cannot make bookings. Please upgrade to a user account.' },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     
     // Validate input with Zod
     const validation = createBookingSchema.safeParse(body);
     if (!validation.success) {
+      const errorMsg = getFirstErrorMessage(validation.error.flatten());
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.flatten() },
+        { error: errorMsg },
         { status: 400 }
       );
     }

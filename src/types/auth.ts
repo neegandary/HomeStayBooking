@@ -1,4 +1,18 @@
-export type UserRole = 'user' | 'admin';
+export type UserRole = 'user' | 'guest' | 'admin';
+
+/**
+ * Check if a role has admin privileges
+ */
+export function isAdminRole(role: UserRole): boolean {
+  return role === 'admin';
+}
+
+/**
+ * Check if a role can make bookings
+ */
+export function canBookRoom(role: UserRole): boolean {
+  return role !== 'guest';
+}
 
 export interface User {
   id: string;

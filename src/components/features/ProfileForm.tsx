@@ -11,7 +11,6 @@ interface ProfileFormProps {
 const ProfileForm: React.FC<ProfileFormProps> = ({ user, onUpdate }) => {
   const [formData, setFormData] = useState({
     name: user.name,
-    email: user.email,
   });
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -33,8 +32,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ user, onUpdate }) => {
     <div className="bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-xl font-black text-primary tracking-tight uppercase">Personal Information</h2>
-          <p className="text-sm text-primary/50 font-medium">Manage your public profile and contact details.</p>
+          <h2 className="text-xl font-black text-primary tracking-tight uppercase">Thông tin cá nhân</h2>
+          <p className="text-sm text-primary/50 font-medium">Quản lý hồ sơ công khai của bạn.</p>
         </div>
         <button
           onClick={() => setIsEditing(!isEditing)}
@@ -44,30 +43,31 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ user, onUpdate }) => {
               : 'bg-primary text-white hover:bg-deep-space shadow-primary/20'
           }`}
         >
-          {isEditing ? 'Cancel' : 'Edit Profile'}
+          {isEditing ? 'Hủy' : 'Chỉnh sửa'}
         </button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-3 ml-1">Full Name</label>
+            <label className="block text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-3 ml-1">Họ và tên</label>
             <input
               type="text"
               disabled={!isEditing}
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               className="w-full bg-primary/5 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-primary focus:bg-white focus:border-primary focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-primary/20"
+              placeholder="Nhập họ và tên"
             />
           </div>
           <div>
-            <label className="block text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-3 ml-1">Email Address</label>
+            <label className="block text-[10px] font-black text-primary/30 uppercase tracking-[0.2em] mb-3 ml-1">Email</label>
             <input
               type="email"
-              disabled={!isEditing}
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full bg-primary/5 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-primary focus:bg-white focus:border-primary focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-primary/20"
+              value={user.email}
+              disabled
+              readOnly
+              className="w-full bg-primary/5 border border-transparent rounded-xl px-4 py-3 text-sm font-bold text-primary/60 focus:bg-white focus:border-primary focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed placeholder:text-primary/20 cursor-not-allowed"
             />
           </div>
         </div>
@@ -79,7 +79,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ user, onUpdate }) => {
               disabled={isLoading}
               className="bg-primary text-white px-10 py-4 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-deep-space transition-all shadow-xl shadow-primary/20 active:scale-[0.98] disabled:opacity-50"
             >
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isLoading ? 'Đang lưu...' : 'Lưu thay đổi'}
             </button>
           </div>
         )}

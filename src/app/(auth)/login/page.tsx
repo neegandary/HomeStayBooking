@@ -98,7 +98,7 @@ function LoginForm() {
         <div className="bg-primary/5 p-4 rounded-xl text-[10px] text-primary/40 leading-relaxed italic">
           <span className="font-black text-primary block mb-1">Thông tin đăng nhập Demo:</span>
           Email: test@example.com <br />
-          Mật khẩu: password
+          Mật khẩu: 123456
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 'use client';
 
-import React, { Suspense, useState, useEffect, useCallback } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import React, { Suspense, useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import SearchBar from '@/components/features/SearchBar';
 import FilterSidebar from '@/components/features/FilterSidebar';
 import RoomGrid from '@/components/features/RoomGrid';
@@ -15,22 +15,61 @@ interface RoomsResponse {
   totalPages: number;
 }
 
-function RoomsContent() {
+// Hook to sync search params with shallow navigation events
+function useShallowSearchParams() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  // Use a ref to track current params without triggering re-renders
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentParamsRef = useRef<any>(searchParams);
+
+  useEffect(() => {
+    const handleShallowNav = () => {
+      // Update from current URL without full reload
+      const url = new URL(window.location.href);
+      const newParams = new URLSearchParams(url.search);
+      currentParamsRef.current = newParams;
+      // Force re-render
+      setSearchParamsObj(newParams);
+    };
+
+    window.addEventListener('shallow-navigation', handleShallowNav);
+    return () => window.removeEventListener('shallow-navigation', handleShallowNav);
+  }, []);
+
+  // State to trigger re-renders
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [, setSearchParamsObj] = useState<any>(searchParams);
+
+  return currentParamsRef.current;
+}
+
+function RoomsContent() {
+  const searchParams = useShallowSearchParams();
   const [rooms, setRooms] = useState<Room[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const previousParams = useRef<string>('');
+
+  // Get current sort values from URL
+  const sortBy = searchParams.get('sortBy') || 'createdAt';
+  const sortOrder = searchParams.get('sortOrder') || 'desc';
 
   // Build API URL with current search params for server-side filtering
   const fetchRooms = useCallback(async () => {
+    const paramsString = searchParams.toString();
+
+    // Skip if params haven't changed
+    if (paramsString === previousParams.current && rooms.length > 0) {
+      return;
+    }
+
+    previousParams.current = paramsString;
     setLoading(true);
+
     try {
-      // Pass all search params to API for server-side filtering
-      const params = new URLSearchParams(searchParams.toString());
-      const response = await fetch(`/api/rooms?${params.toString()}`);
+      const response = await fetch(`/api/rooms?${paramsString}`);
       if (response.ok) {
         const data: RoomsResponse = await response.json();
         setRooms(data.rooms);
@@ -43,19 +82,47 @@ function RoomsContent() {
     } finally {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [searchParams, rooms.length]);
 
   // Re-fetch when search params change
   useEffect(() => {
     fetchRooms();
   }, [fetchRooms]);
 
-  // Handle page change - memoized to avoid re-creation
+  // Handle page change with shallow navigation
   const handlePageChange = useCallback((newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
     params.set('page', newPage.toString());
-    router.push(`/rooms?${params.toString()}`);
-  }, [searchParams, router]);
+    const url = `/rooms?${params.toString()}`;
+
+    // Shallow navigation - update URL without full page reload
+    window.history.pushState(null, '', url);
+    window.dispatchEvent(new Event('shallow-navigation'));
+  }, [searchParams]);
+
+  // Handle sort change
+  const handleSortChange = useCallback((value: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set('page', '1'); // Reset to first page on sort
+
+    switch (value) {
+      case 'price-asc':
+        params.set('sortBy', 'price');
+        params.set('sortOrder', 'asc');
+        break;
+      case 'price-desc':
+        params.set('sortBy', 'price');
+        params.set('sortOrder', 'desc');
+        break;
+      default:
+        params.delete('sortBy');
+        params.delete('sortOrder');
+    }
+
+    const url = `/rooms?${params.toString()}`;
+    window.history.pushState(null, '', url);
+    window.dispatchEvent(new Event('shallow-navigation'));
+  }, [searchParams]);
 
   if (loading) {
     return (
@@ -73,8 +140,11 @@ function RoomsContent() {
       {/* Search Bar Header */}
       <div className="bg-white border-b border-primary/5 py-12 px-4 shadow-xl shadow-primary/5">
         <div className="container mx-auto">
-          <h1 className="text-3xl md:text-5xl font-black text-primary mb-8 text-center tracking-tight uppercase">
-            Tìm chuyến phiêu lưu <br /> tiếp theo của bạn
+          <h1 className="text-3xl md:text-5xl font-black text-primary mb-2  text-center tracking-tight uppercase">
+            Tìm chuyến phiêu lưu 
+          </h1>
+          <h1 className="text-3xl md:text-5xl font-black text-primary mb-8  text-center tracking-tight uppercase">
+            tiếp theo của bạn
           </h1>
           <SearchBar />
         </div>
@@ -95,10 +165,14 @@ function RoomsContent() {
               </h2>
               <div className="flex items-center gap-3">
                 <span className="text-[10px] text-primary/40 font-black uppercase tracking-widest">Sắp xếp:</span>
-                <select className="text-[10px] font-black uppercase tracking-widest bg-transparent focus:outline-none cursor-pointer text-primary">
-                  <option>Đề xuất</option>
-                  <option>Giá: Thấp đến Cao</option>
-                  <option>Giá: Cao đến Thấp</option>
+                <select
+                  value={sortBy === 'createdAt' ? 'default' : `price-${sortOrder}`}
+                  onChange={(e) => handleSortChange(e.target.value)}
+                  className="text-[10px] font-black uppercase tracking-widest bg-transparent focus:outline-none cursor-pointer text-primary"
+                >
+                  <option value="default">Đề xuất</option>
+                  <option value="price-asc">Giá: Thấp đến Cao</option>
+                  <option value="price-desc">Giá: Cao đến Thấp</option>
                 </select>
               </div>
             </div>

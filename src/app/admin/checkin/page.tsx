@@ -44,7 +44,6 @@ interface CheckinResult {
 }
 
 export default function AdminCheckinPage() {
-  const { user } = useAuth();
   const [scanResult, setScanResult] = useState<CheckinData | null>(null);
   const [bookingDetails, setBookingDetails] = useState<BookingWithRoom | null>(null);
   const [checkinResult, setCheckinResult] = useState<CheckinResult | null>(null);
@@ -210,28 +209,6 @@ export default function AdminCheckinPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Breadcrumb Header */}
-      <header className="flex shrink-0 items-center justify-between border-b border-slate-200 bg-white px-8 py-4">
-        <div>
-          <p className="text-sm text-slate-500">Admin / Check-in</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <button className="relative text-slate-500 hover:text-slate-700">
-            <span className="material-symbols-outlined text-2xl">notifications</span>
-            <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-red-500 ring-2 ring-white"></span>
-          </button>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold">
-              {user?.name?.charAt(0) || 'A'}
-            </div>
-            <div className="text-sm">
-              <p className="font-semibold text-slate-900">{user?.name || 'Administrator'}</p>
-              <p className="text-slate-500">Administrator</p>
-            </div>
-          </div>
-        </div>
-      </header>
-
       {/* Page Content */}
       <div className="flex-1 p-8 overflow-y-auto">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-full">

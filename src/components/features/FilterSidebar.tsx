@@ -1,22 +1,53 @@
 'use client';
 
-import React from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
 interface FilterSidebarProps {
   className?: string;
 }
 
-const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
-  const router = useRouter();
+// Custom hook for shallow routing
+function useShallowSearchParams() {
   const searchParams = useSearchParams();
-  const amenities = ['Wifi', 'Điều hòa', 'Bếp', 'Bữa sáng', 'Hồ bơi riêng', 'View biển', 'View núi', 'View thành phố'];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const currentParamsRef = useRef<any>(searchParams);
+
+  useEffect(() => {
+    const handleShallowNav = () => {
+      const url = new URL(window.location.href);
+      const newParams = new URLSearchParams(url.search);
+      currentParamsRef.current = newParams;
+      setSearchParamsObj(newParams);
+    };
+
+    window.addEventListener('shallow-navigation', handleShallowNav);
+    return () => window.removeEventListener('shallow-navigation', handleShallowNav);
+  }, []);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [, setSearchParamsObj] = useState<any>(searchParams);
+
+  return currentParamsRef.current;
+}
+
+const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
+  const searchParams = useShallowSearchParams();
 
   const currentPrice = searchParams.get('maxPrice') || '20000000';
-  const selectedAmenities = searchParams.getAll('amenities');
+  const selectedAmenities: string[] = searchParams.getAll('amenities');
   const currentCapacity = searchParams.get('guests') || '';
 
-  const updateFilters = (key: string, value: string | string[], isArray = false) => {
+  // Shallow navigation - update URL without full page reload
+  const shallowPush = useCallback((url: string) => {
+    if (typeof window !== 'undefined') {
+      window.history.pushState(null, '', url);
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new Event('shallow-navigation'));
+    }
+  }, []);
+
+  const updateFilters = useCallback((key: string, value: string | string[], isArray = false) => {
     const params = new URLSearchParams(searchParams.toString());
 
     if (isArray) {
@@ -30,19 +61,12 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
       }
     }
 
-    router.push(`/rooms?${params.toString()}`);
-  };
+    shallowPush(`/rooms?${params.toString()}`);
+  }, [searchParams, shallowPush]);
 
-  const toggleAmenity = (amenity: string) => {
-    const newAmenities = selectedAmenities.includes(amenity)
-      ? selectedAmenities.filter(a => a !== amenity)
-      : [...selectedAmenities, amenity];
-    updateFilters('amenities', newAmenities, true);
-  };
-
-  const handleClearAll = () => {
-    router.push('/rooms');
-  };
+  const handleClearAll = useCallback(() => {
+    shallowPush('/rooms');
+  }, [shallowPush]);
 
   return (
     <aside className={`bg-white rounded-3xl border border-primary/5 p-8 shadow-xl shadow-primary/5 h-fit ${className}`}>
@@ -76,28 +100,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
             </div>
             <span className="text-[10px] font-black text-primary/20">20M+</span>
           </div>
-        </div>
-      </div>
-
-      {/* Amenities */}
-      <div className="mb-10">
-        <h4 className="text-[10px] font-black text-primary/60 uppercase tracking-widest mb-6">Tiện nghi</h4>
-        <div className="space-y-4">
-          {amenities.map((amenity) => (
-            <label key={amenity} className="flex items-center group cursor-pointer">
-              <div className="relative flex items-center justify-center">
-                <input
-                  type="checkbox"
-                  checked={selectedAmenities.includes(amenity)}
-                  onChange={() => toggleAmenity(amenity)}
-                  className="w-5 h-5 rounded-lg border-2 border-primary/10 text-primary focus:ring-primary/20 accent-primary cursor-pointer transition-all"
-                />
-              </div>
-              <span className="ml-4 text-xs font-bold text-primary/60 group-hover:text-primary transition-colors">
-                {amenity}
-              </span>
-            </label>
-          ))}
         </div>
       </div>
 

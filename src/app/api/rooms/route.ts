@@ -44,19 +44,13 @@ export async function GET(request: NextRequest) {
       amenities = amenitiesAll;
     }
     if (amenities.length > 0) {
-      // Sanitize: whitelist alphanumeric, spaces, hyphens only (max 50 chars)
-      // Escape regex special chars to prevent ReDoS/injection
-      const escapeRegex = (str: string) => str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const sanitizedAmenities = amenities
-        .filter(a => /^[a-zA-Z0-9\s-]{1,50}$/.test(a))
-        .map(a => escapeRegex(a));
+      // Flexible matching - case insensitive partial match
+      // This handles differences in accent marks and formatting
+      const amenityPatterns = amenities.map(a => a.toLowerCase().trim()).filter(Boolean);
 
-      if (sanitizedAmenities.length > 0) {
-        // Case-insensitive exact match
-        filters.amenities = {
-          $all: sanitizedAmenities.map(a => new RegExp(`^${a}$`, 'i'))
-        };
-      }
+      filters.amenities = {
+        $in: amenityPatterns
+      };
     }
 
     // Capacity filter with validation (guests param for backward compat)
@@ -101,9 +95,26 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(50, Math.max(1, Number(searchParams.get('limit')) || 12));
     const skip = (page - 1) * limit;
 
+    // Sort handling
+    const sortBy = searchParams.get('sortBy') || 'createdAt';
+    const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
+    let sortOptions: string | { [key: string]: number } = '-createdAt';
+
+    switch (sortBy) {
+      case 'price':
+        sortOptions = sortOrder === 1 ? 'price' : '-price';
+        break;
+      case 'capacity':
+        sortOptions = sortOrder === 1 ? 'capacity' : '-capacity';
+        break;
+      case 'name':
+        sortOptions = sortOrder === 1 ? 'name' : '-name';
+        break;
+    }
+
     // Execute query
     const [rooms, total] = await Promise.all([
-      Room.find(filters).skip(skip).limit(limit).sort({ createdAt: -1 }),
+      Room.find(filters).skip(skip).limit(limit).sort(sortOptions),
       Room.countDocuments(filters)
     ]);
 

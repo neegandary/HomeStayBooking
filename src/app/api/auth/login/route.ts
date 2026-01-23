@@ -4,7 +4,7 @@ import User from '@/models/User';
 import bcrypt from 'bcryptjs';
 import { generateTokens } from '@/lib/auth';
 import { rateLimiters, getClientIP } from '@/lib/ratelimit';
-import { loginSchema } from '@/lib/validations';
+import { loginSchema, getFirstErrorMessage } from '@/lib/validations';
 
 export async function POST(request: Request) {
   try {
@@ -28,8 +28,9 @@ export async function POST(request: Request) {
     // Validate input with Zod
     const validation = loginSchema.safeParse(body);
     if (!validation.success) {
+      const errorMsg = getFirstErrorMessage(validation.error.flatten());
       return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.flatten() },
+        { error: errorMsg },
         { status: 400 }
       );
     }
@@ -41,13 +42,19 @@ export async function POST(request: Request) {
     const user = await User.findOne({ email });
 
     if (!user) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Email hoặc mật khẩu không chính xác' },
+        { status: 401 }
+      );
     }
 
     // Compare passwords
     const isPasswordMatch = await bcrypt.compare(password, user.password);
     if (!isPasswordMatch) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Email hoặc mật khẩu không chính xác' },
+        { status: 401 }
+      );
     }
 
     // Generate real JWT tokens

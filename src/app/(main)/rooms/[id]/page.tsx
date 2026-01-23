@@ -1,9 +1,9 @@
 import React from 'react';
-import Link from 'next/link';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import connectDB from '@/lib/db/mongodb';
 import Room from '@/models/Room';
+import BookingSidebar from '@/components/features/BookingSidebar';
 
 interface RoomDetailPageProps {
   params: Promise<{ id: string }>;
@@ -67,13 +67,6 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   if (!room) {
     notFound();
   }
-
-  // Calculate pricing (example: 4 nights)
-  const nights = 4;
-  const subtotal = room.price * nights;
-  const cleaningFee = 150000;
-  const serviceFee = Math.round(subtotal * 0.05);
-  const total = subtotal + cleaningFee + serviceFee;
 
   return (
     <main className="container mx-auto px-6 py-10 bg-background-light" style={{ color: 'var(--color-primary)' }}>
@@ -220,87 +213,7 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
 
         {/* Right Column: Booking Sidebar */}
         <div className="lg:w-1/3 relative mt-12 lg:mt-0">
-          <div className="sticky top-28">
-            <div className="bg-white border border-primary/10 rounded-xl p-6 shadow-xl shadow-primary/5">
-              <div className="flex items-baseline gap-2">
-                <p className="text-2xl font-bold">
-                  {room.price.toLocaleString('vi-VN')}đ
-                </p>
-                <p className="opacity-80">/ đêm</p>
-              </div>
-
-              {/* Date Inputs */}
-              <div className="mt-6 grid grid-cols-2 gap-px border border-primary/20 rounded-lg overflow-hidden">
-                <div className="p-3 bg-white">
-                  <label className="block text-xs font-bold uppercase tracking-wider opacity-60">
-                    Nhận phòng
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full border-none p-0 mt-1 font-medium bg-transparent focus:ring-0"
-                  />
-                </div>
-                <div className="p-3 bg-white">
-                  <label className="block text-xs font-bold uppercase tracking-wider opacity-60">
-                    Trả phòng
-                  </label>
-                  <input
-                    type="date"
-                    className="w-full border-none p-0 mt-1 font-medium bg-transparent focus:ring-0"
-                  />
-                </div>
-              </div>
-
-              {/* Guests Select */}
-              <div className="mt-px border border-t-0 border-primary/20 rounded-lg rounded-t-none overflow-hidden">
-                <div className="p-3 bg-white">
-                  <label className="block text-xs font-bold uppercase tracking-wider opacity-60">
-                    Số khách
-                  </label>
-                  <select className="w-full border-none p-0 mt-1 font-medium bg-transparent focus:ring-0">
-                    {Array.from({ length: room.capacity }, (_, i) => i + 1).map((num) => (
-                      <option key={num} value={num}>
-                        {num} khách
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Reserve Button */}
-              <Link
-                href={`/rooms/${room._id}/book`}
-                className="w-full mt-6 flex cursor-pointer items-center justify-center overflow-hidden rounded-lg h-12 px-6 bg-action text-white text-base font-bold hover:opacity-90 transition-opacity"
-              >
-                <span className="truncate">Đặt phòng</span>
-              </Link>
-              <p className="text-center text-sm mt-4 opacity-60">
-                Bạn chưa bị trừ tiền
-              </p>
-
-              {/* Price Breakdown */}
-              <div className="mt-6 space-y-3">
-                <div className="flex justify-between opacity-80">
-                  <span>{room.price.toLocaleString('vi-VN')}đ x {nights} đêm</span>
-                  <span>{subtotal.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="flex justify-between opacity-80">
-                  <span>Phí dọn dẹp</span>
-                  <span>{cleaningFee.toLocaleString('vi-VN')}đ</span>
-                </div>
-                <div className="flex justify-between opacity-80">
-                  <span>Phí dịch vụ</span>
-                  <span>{serviceFee.toLocaleString('vi-VN')}đ</span>
-                </div>
-              </div>
-
-              {/* Total */}
-              <div className="mt-4 pt-4 border-t border-primary/10 flex justify-between font-bold">
-                <span>Tổng cộng</span>
-                <span>{total.toLocaleString('vi-VN')}đ</span>
-              </div>
-            </div>
-          </div>
+          <BookingSidebar room={room} />
         </div>
       </div>
     </main>

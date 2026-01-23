@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { Room } from '@/types/room';
 import { BookingFormData } from '@/types/booking';
 import { bookingService } from '@/lib/bookingService';
+import { vnpay } from '@/lib/vnpay';
 import { useAuth } from '@/hooks/useAuth';
 import { useBookingPrice } from '@/hooks/useBookingPrice';
 
@@ -55,6 +56,26 @@ export default function BookPage({ params }: BookPageProps) {
   );
 
   const finalTotal = Math.max(0, total - promoDiscount);
+
+  // Restore search params from sessionStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = sessionStorage.getItem('stayeasy_search_params');
+      if (saved) {
+        try {
+          const params = JSON.parse(saved);
+          setFormData(prev => ({
+            ...prev,
+            checkIn: params.checkIn || prev.checkIn,
+            checkOut: params.checkOut || prev.checkOut,
+            guests: params.guests || prev.guests,
+          }));
+        } catch (e) {
+          console.error('Failed to restore search params:', e);
+        }
+      }
+    }
+  }, []);
 
   // Parallel fetch room and availability to avoid waterfall
   useEffect(() => {
@@ -114,12 +135,30 @@ export default function BookPage({ params }: BookPageProps) {
     }
     setIsSubmitting(true);
     try {
+      // Format dates to YYYY-MM-DD for validation
+      const formatDate = (date: string | null) => {
+        if (!date) return '';
+        const d = new Date(date);
+        return d.toISOString().split('T')[0];
+      };
+
       const response = await bookingService.create({
         ...formData,
+        checkIn: formatDate(formData.checkIn),
+        checkOut: formatDate(formData.checkOut),
+        guests: Number(formData.guests),
         totalPrice: total,
         promoCode,
       });
-      router.push(`/payment/${response.data.id}`);
+
+      // Navigate directly to VNPay sandbox
+      const paymentUrl = vnpay.createPaymentUrl({
+        bookingId: response.data.id,
+        amount: finalTotal,
+        orderInfo: `Thanh toan dat phong ${room?.name || 'phong'}`,
+        ipAddr: '127.0.0.1',
+      });
+      window.location.href = paymentUrl;
     } catch (error) {
       console.error('Booking failed:', error);
       alert('Đặt phòng thất bại. Vui lòng thử lại.');
@@ -344,13 +383,10 @@ export default function BookPage({ params }: BookPageProps) {
                   }`}
                 >
                   <span className="truncate">
-                    {isSubmitting ? 'Đang xử lý...' : 'Tiếp tục thanh toán'}
+                    {isSubmitting ? 'Đang xử lý...' : 'Thanh toán'}
                   </span>
                 </button>
 
-                <p className="text-center text-xs opacity-60">
-                  Bạn chưa bị trừ tiền. Thanh toán an toàn bởi StayEasy.
-                </p>
               </div>
             </div>
           </div>

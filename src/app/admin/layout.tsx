@@ -3,7 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import AdminSidebar from '@/components/layout/AdminSidebar';
+import DashboardLayoutSidebar from '@/components/layout/DashboardLayoutSidebar';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div className="min-h-screen bg-background-light flex">
-      <AdminSidebar />
+      <DashboardLayoutSidebar />
       <main className="flex-1 min-h-screen overflow-y-auto">
         <div className="p-4 md:p-8">
           {children}

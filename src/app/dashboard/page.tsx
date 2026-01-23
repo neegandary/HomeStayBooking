@@ -7,10 +7,15 @@ import { bookingService } from '@/lib/bookingService';
 import { Booking } from '@/types/booking';
 import { Room } from '@/types/room';
 
+type TabType = 'upcoming' | 'past';
+const ITEMS_PER_PAGE = 5;
+
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [rooms, setRooms] = useState<Room[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<TabType>('upcoming');
+  const [pastPage, setPastPage] = useState(1);
 
   const fetchBookings = async () => {
     setIsLoading(true);
@@ -187,35 +192,111 @@ export default function BookingsPage() {
             <h1 className="text-4xl font-black leading-tight tracking-tight min-w-72">Đặt phòng của tôi</h1>
           </div>
 
-          {/* Two Column Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full">
-            {/* Upcoming Bookings */}
-            <section className="flex flex-col gap-6">
-              <h2 className="text-[22px] font-bold leading-tight tracking-tight px-4">Đặt phòng sắp tới</h2>
-              <div className="flex flex-col gap-6">
-                {upcomingBookings.length > 0 ? (
-                  upcomingBookings.map((booking) => (
-                    <BookingCardItem key={booking.id} booking={booking} showCancel={true} />
-                  ))
-                ) : (
-                  <EmptyState message="Không có đặt phòng sắp tới. Hãy lên kế hoạch cho kỳ nghỉ tiếp theo!" />
-                )}
-              </div>
-            </section>
+          {/* Tab Navigation */}
+          <div className="flex gap-1 p-1 mb-8 bg-white rounded-2xl shadow-sm shadow-primary/5 border border-primary/5 w-fit">
+            <button
+              onClick={() => {
+                setActiveTab('upcoming');
+                setPastPage(1);
+              }}
+              className={`px-6 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 ${
+                activeTab === 'upcoming'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'text-primary/60 hover:text-primary hover:bg-primary/5'
+              }`}
+            >
+              Đặt phòng sắp tới
+              {upcomingBookings.length > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-white/20">
+                  {upcomingBookings.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('past');
+                setPastPage(1);
+              }}
+              className={`px-6 py-3 rounded-xl text-sm font-bold tracking-wide transition-all duration-300 ${
+                activeTab === 'past'
+                  ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                  : 'text-primary/60 hover:text-primary hover:bg-primary/5'
+              }`}
+            >
+              Đặt phòng trước đây
+              {pastBookings.length > 0 && (
+                <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-white/20">
+                  {pastBookings.length}
+                </span>
+              )}
+            </button>
+          </div>
 
-            {/* Past Bookings */}
-            <section className="flex flex-col gap-6">
-              <h2 className="text-[22px] font-bold leading-tight tracking-tight px-4">Đặt phòng trước đây</h2>
-              <div className="flex flex-col gap-6">
-                {pastBookings.length > 0 ? (
-                  pastBookings.map((booking) => (
-                    <BookingCardItem key={booking.id} booking={booking} showCancel={false} />
-                  ))
-                ) : (
-                  <EmptyState message="Chưa có đặt phòng trước đây." />
-                )}
-              </div>
-            </section>
+          {/* Tab Content */}
+          <div className="w-full">
+            {activeTab === 'upcoming' && (
+              <section className="flex flex-col gap-6 animate-in fade-in duration-300">
+                <div className="flex flex-col gap-6">
+                  {upcomingBookings.length > 0 ? (
+                    upcomingBookings.map((booking) => (
+                      <BookingCardItem key={booking.id} booking={booking} showCancel={true} />
+                    ))
+                  ) : (
+                    <EmptyState message="Không có đặt phòng sắp tới. Hãy lên kế hoạch cho kỳ nghỉ tiếp theo!" />
+                  )}
+                </div>
+              </section>
+            )}
+
+            {activeTab === 'past' && (
+              <section className="flex flex-col gap-6 animate-in fade-in duration-300">
+                <div className="flex flex-col gap-6">
+                  {pastBookings.length > 0 ? (
+                    <>
+                      {/* Pagination logic */}
+                      {(() => {
+                        const totalPages = Math.ceil(pastBookings.length / ITEMS_PER_PAGE);
+                        const startIndex = (pastPage - 1) * ITEMS_PER_PAGE;
+                        const paginatedBookings = pastBookings.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+                        return (
+                          <>
+                            {paginatedBookings.map((booking) => (
+                              <BookingCardItem key={booking.id} booking={booking} showCancel={false} />
+                            ))}
+
+                            {/* Pagination Controls */}
+                            {totalPages > 1 && (
+                              <div className="flex items-center justify-center gap-2 mt-4">
+                                <button
+                                  onClick={() => setPastPage(p => Math.max(1, p - 1))}
+                                  disabled={pastPage === 1}
+                                  className="px-4 py-2 rounded-lg bg-white border border-primary/10 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/5 transition-colors"
+                                >
+                                  Trước
+                                </button>
+                                <span className="text-sm opacity-60">
+                                  Trang {pastPage} / {totalPages}
+                                </span>
+                                <button
+                                  onClick={() => setPastPage(p => Math.min(totalPages, p + 1))}
+                                  disabled={pastPage === totalPages}
+                                  className="px-4 py-2 rounded-lg bg-white border border-primary/10 text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary/5 transition-colors"
+                                >
+                                  Sau
+                                </button>
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </>
+                  ) : (
+                    <EmptyState message="Chưa có đặt phòng trước đây." />
+                  )}
+                </div>
+              </section>
+            )}
           </div>
 
           {/* Explore CTA */}
