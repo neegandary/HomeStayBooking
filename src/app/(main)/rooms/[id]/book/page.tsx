@@ -10,6 +10,7 @@ import { bookingService } from '@/lib/bookingService';
 import { vnpay } from '@/lib/vnpay';
 import { useAuth } from '@/hooks/useAuth';
 import { useBookingPrice } from '@/hooks/useBookingPrice';
+import { AIItinerary } from '@/components/itinerary';
 
 // Use next/dynamic for code splitting heavy components
 const DateRangePicker = dynamic(
@@ -48,6 +49,9 @@ export default function BookPage({ params }: BookPageProps) {
   // Promo code state
   const [promoCode, setPromoCode] = useState<string | undefined>();
   const [promoDiscount, setPromoDiscount] = useState<number>(0);
+
+  // AI Itinerary tab state
+  const [activeTab, setActiveTab] = useState<'booking' | 'itinerary'>('booking');
 
   const { nights, subtotal, cleaningFee, serviceFee, total } = useBookingPrice(
     room?.price || 0,
@@ -182,118 +186,156 @@ export default function BookPage({ params }: BookPageProps) {
           {/* Left Column: Form */}
           <div className="lg:col-span-7">
             <div className="flex flex-col gap-10">
-              {/* Progress Bar */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center justify-between text-sm">
-                  <p className="font-medium text-action">Chi tiết</p>
-                  <p className="font-medium opacity-40">Thanh toán</p>
-                  <p className="font-medium opacity-40">Xác nhận</p>
-                </div>
-                <div className="relative h-1 w-full rounded-full bg-primary/10">
-                  <div className="absolute left-0 top-0 h-1 rounded-full bg-action" style={{ width: '33%' }}></div>
-                </div>
+              {/* Tab Navigation */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('booking')}
+                  className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                    activeTab === 'booking'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-primary/5 text-primary/60 hover:bg-primary/10'
+                  }`}
+                >
+                  <span className="material-symbols-outlined">book_online</span>
+                  Đặt phòng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('itinerary')}
+                  className={`px-6 py-3 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                    activeTab === 'itinerary'
+                      ? 'bg-primary text-white shadow-lg shadow-primary/20'
+                      : 'bg-primary/5 text-primary/60 hover:bg-primary/10'
+                  }`}
+                >
+                  <span className="material-symbols-outlined">auto_awesome</span>
+                  Lịch trình AI
+                </button>
               </div>
 
-              {/* Page Heading */}
-              <h1 className="text-4xl font-black leading-tight tracking-tight">Xác nhận và thanh toán</h1>
-
-              {/* Booking Details Section */}
-              <div className="space-y-6">
-                <h2 className="font-black uppercase tracking-tight">Chi tiết đặt phòng</h2>
-                <div className="rounded-lg border border-primary/10 p-6">
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <div>
-                      <p className="pb-2 text-sm font-medium">Nhận / Trả phòng</p>
-                      <div className="flex h-14 w-full items-center rounded-lg border border-primary/20 px-4">
-                        <p className="text-base font-normal">
-                          {formData.checkIn && formData.checkOut
-                            ? `${new Date(formData.checkIn).toLocaleDateString('vi-VN')} - ${new Date(formData.checkOut).toLocaleDateString('vi-VN')}`
-                            : 'Chọn ngày bên dưới'}
-                        </p>
-                      </div>
+              {/* Tab Content */}
+              {activeTab === 'booking' ? (
+                <>
+                  {/* Progress Bar */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <p className="font-medium text-action">Chi tiết</p>
+                      <p className="font-medium opacity-40">Thanh toán</p>
+                      <p className="font-medium opacity-40">Xác nhận</p>
                     </div>
-                    <div>
-                      <p className="pb-2 text-sm font-medium">Số khách</p>
-                      <select
-                        value={formData.guests}
-                        onChange={(e) => setFormData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
-                        className="flex h-14 w-full items-center rounded-lg border border-primary/20 bg-transparent px-4 text-base font-normal focus:border-primary focus:outline-none focus:ring-0"
-                      >
-                        {[...Array(room.capacity)].map((_, i) => (
-                          <option key={i + 1} value={i + 1}>{i + 1} khách</option>
-                        ))}
-                      </select>
+                    <div className="relative h-1 w-full rounded-full bg-primary/10">
+                      <div className="absolute left-0 top-0 h-1 rounded-full bg-action" style={{ width: '33%' }}></div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Calendar Section */}
-              <div className="space-y-6">
-                <h2 className="font-black uppercase tracking-tight">Chọn ngày</h2>
-                <div className="rounded-lg border border-primary/10 p-4 md:p-6">
-                  <DateRangePicker
-                    checkIn={formData.checkIn}
-                    checkOut={formData.checkOut}
-                    onChange={handleDateChange}
-                    excludeDates={bookedDates}
-                  />
-                </div>
-              </div>
+                  {/* Page Heading */}
+                  <h1 className="text-4xl font-black leading-tight tracking-tight">Xác nhận và thanh toán</h1>
 
-              {/* Contact Information Section */}
-              <div className="space-y-6">
-                <h2 className="font-black uppercase tracking-tight">Thông tin liên hệ</h2>
-                <div className="grid grid-cols-1 gap-4">
-                  <label className="flex flex-col">
-                    <p className="pb-2 text-sm font-medium">Họ và tên</p>
-                    <input
-                      type="text"
-                      required
-                      value={formData.guestName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, guestName: e.target.value }))}
-                      className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
-                      placeholder="Nhập họ và tên"
-                    />
-                  </label>
-                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                    <label className="flex flex-col">
-                      <p className="pb-2 text-sm font-medium">Email</p>
-                      <input
-                        type="email"
-                        required
-                        value={formData.guestEmail}
-                        onChange={(e) => setFormData(prev => ({ ...prev, guestEmail: e.target.value }))}
-                        className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
-                        placeholder="email@example.com"
-                      />
-                    </label>
-                    <label className="flex flex-col">
-                      <div className="flex items-center gap-2 pb-2">
-                        <p className="text-sm font-medium">Số điện thoại</p>
-                        <span className="material-symbols-outlined text-base opacity-50 cursor-help" title="Dùng để xác nhận đặt phòng">help</span>
+                  {/* Booking Details Section */}
+                  <div className="space-y-6">
+                    <h2 className="font-black uppercase tracking-tight">Chi tiết đặt phòng</h2>
+                    <div className="rounded-lg border border-primary/10 p-6">
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <div>
+                          <p className="pb-2 text-sm font-medium">Nhận / Trả phòng</p>
+                          <div className="flex h-14 w-full items-center rounded-lg border border-primary/20 px-4">
+                            <p className="text-base font-normal">
+                              {formData.checkIn && formData.checkOut
+                                ? `${new Date(formData.checkIn).toLocaleDateString('vi-VN')} - ${new Date(formData.checkOut).toLocaleDateString('vi-VN')}`
+                                : 'Chọn ngày bên dưới'}
+                            </p>
+                          </div>
+                        </div>
+                        <div>
+                          <p className="pb-2 text-sm font-medium">Số khách</p>
+                          <select
+                            value={formData.guests}
+                            onChange={(e) => setFormData(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
+                            className="flex h-14 w-full items-center rounded-lg border border-primary/20 bg-transparent px-4 text-base font-normal focus:border-primary focus:outline-none focus:ring-0"
+                          >
+                            {[...Array(room.capacity)].map((_, i) => (
+                              <option key={i + 1} value={i + 1}>{i + 1} khách</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
-                      <input
-                        type="tel"
-                        required
-                        value={formData.guestPhone}
-                        onChange={(e) => setFormData(prev => ({ ...prev, guestPhone: e.target.value }))}
-                        className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
-                        placeholder="0123 456 789"
-                      />
-                    </label>
+                    </div>
                   </div>
-                  <label className="flex flex-col">
-                    <p className="pb-2 text-sm font-medium">Yêu cầu đặc biệt (Tùy chọn)</p>
-                    <textarea
-                      value={formData.specialRequests}
-                      onChange={(e) => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
-                      className="h-32 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0 resize-none"
-                      placeholder="Cho chúng tôi biết nếu bạn có yêu cầu đặc biệt..."
-                    />
-                  </label>
-                </div>
-              </div>
+
+                  {/* Calendar Section */}
+                  <div className="space-y-6">
+                    <h2 className="font-black uppercase tracking-tight">Chọn ngày</h2>
+                    <div className="rounded-lg border border-primary/10 p-4 md:p-6">
+                      <DateRangePicker
+                        checkIn={formData.checkIn}
+                        checkOut={formData.checkOut}
+                        onChange={handleDateChange}
+                        excludeDates={bookedDates}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contact Information Section */}
+                  <div className="space-y-6">
+                    <h2 className="font-black uppercase tracking-tight">Thông tin liên hệ</h2>
+                    <div className="grid grid-cols-1 gap-4">
+                      <label className="flex flex-col">
+                        <p className="pb-2 text-sm font-medium">Họ và tên</p>
+                        <input
+                          type="text"
+                          required
+                          value={formData.guestName}
+                          onChange={(e) => setFormData(prev => ({ ...prev, guestName: e.target.value }))}
+                          className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
+                          placeholder="Nhập họ và tên"
+                        />
+                      </label>
+                      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                        <label className="flex flex-col">
+                          <p className="pb-2 text-sm font-medium">Email</p>
+                          <input
+                            type="email"
+                            required
+                            value={formData.guestEmail}
+                            onChange={(e) => setFormData(prev => ({ ...prev, guestEmail: e.target.value }))}
+                            className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
+                            placeholder="email@example.com"
+                          />
+                        </label>
+                        <label className="flex flex-col">
+                          <div className="flex items-center gap-2 pb-2">
+                            <p className="text-sm font-medium">Số điện thoại</p>
+                            <span className="material-symbols-outlined text-base opacity-50 cursor-help" title="Dùng để xác nhận đặt phòng">help</span>
+                          </div>
+                          <input
+                            type="tel"
+                            required
+                            value={formData.guestPhone}
+                            onChange={(e) => setFormData(prev => ({ ...prev, guestPhone: e.target.value }))}
+                            className="h-14 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0"
+                            placeholder="0123 456 789"
+                          />
+                        </label>
+                      </div>
+                      <label className="flex flex-col">
+                        <p className="pb-2 text-sm font-medium">Yêu cầu đặc biệt (Tùy chọn)</p>
+                        <textarea
+                          value={formData.specialRequests}
+                          onChange={(e) => setFormData(prev => ({ ...prev, specialRequests: e.target.value }))}
+                          className="h-32 w-full rounded-lg border border-primary/20 bg-transparent p-4 text-base font-normal placeholder:opacity-40 focus:border-primary focus:outline-none focus:ring-0 resize-none"
+                          placeholder="Cho chúng tôi biết nếu bạn có yêu cầu đặc biệt..."
+                        />
+                      </label>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <AIItinerary
+                  roomName={room?.name}
+                  city={room?.city || 'Đà Lạt'}
+                />
+              )}
             </div>
           </div>
 
