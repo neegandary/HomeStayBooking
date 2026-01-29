@@ -3,6 +3,7 @@ import { Manrope, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/hooks/useAuth";
 import Header from "@/components/layout/Header";
+import AgentationWrapper from "@/components/agentation/agentation-wrapper";
 
 const manrope = Manrope({
   variable: "--font-manrope",
@@ -66,6 +67,7 @@ export default function RootLayout({
           <main className="flex-1">
             {children}
           </main>
+          <AgentationWrapper />
         </AuthProvider>
       </body>
     </html>

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import connectDB from '@/lib/db/mongodb';
 import Room from '@/models/Room';
 import BookingSidebar from '@/components/features/BookingSidebar';
+import { RatingSummary, ReviewList } from '@/components/reviews';
+import { Map } from '@/components/map';
 
 interface RoomDetailPageProps {
   params: Promise<{ id: string }>;
@@ -41,32 +43,74 @@ function getAmenityIcon(amenity: string): string {
   return 'check_circle';
 }
 
-async function getRoom(id: string) {
+async function getRoomWithReviews(id: string) {
   try {
     await connectDB();
-    const room = await Room.findById(id).lean();
-    return room ? JSON.parse(JSON.stringify(room)) : null;
+    const room = await Room.findOne({
+      _id: id,
+      deleted: { $ne: true },
+    }).lean();
+
+    if (!room) {
+      return null;
+    }
+
+    // Fetch reviews for this room
+    const Review = (await import('@/models/Review')).default;
+    const reviews = await Review.find({
+      roomId: id,
+      deleted: { $ne: true },
+    })
+      .populate('userId', 'name')
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    // Calculate rating distribution
+    const allReviews = await Review.find({
+      roomId: id,
+      deleted: { $ne: true },
+    }).lean();
+
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    allReviews.forEach((r: any) => {
+      if (r.rating >= 1 && r.rating <= 5) {
+        distribution[r.rating as keyof typeof distribution]++;
+      }
+    });
+
+    return {
+      room: JSON.parse(JSON.stringify(room)),
+      ratingStats: {
+        averageRating: room.averageRating || 0,
+        totalReviews: room.reviewCount || 0,
+        distribution,
+      },
+      reviews: JSON.parse(JSON.stringify(reviews)),
+    };
   } catch (error) {
-    console.error('Failed to fetch room:', error);
+    console.error('Failed to fetch room with reviews:', error);
     return null;
   }
 }
 
 export async function generateMetadata({ params }: RoomDetailPageProps) {
   const { id } = await params;
-  const room = await getRoom(id);
+  const data = await getRoomWithReviews(id);
   return {
-    title: room ? `${room.name} | StayEasy` : 'Room Not Found',
+    title: data?.room ? `${data.room.name} | StayEasy` : 'Room Not Found',
   };
 }
 
 export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
   const { id } = await params;
-  const room = await getRoom(id);
+  const data = await getRoomWithReviews(id);
 
-  if (!room) {
+  if (!data) {
     notFound();
   }
+
+  const { room, ratingStats, reviews } = data;
 
   return (
     <main className="container mx-auto px-6 py-10 bg-background-light" style={{ color: 'var(--color-primary)' }}>
@@ -166,48 +210,111 @@ export default async function RoomDetailPage({ params }: RoomDetailPageProps) {
             </div>
           </div>
 
+          {/* Location Section */}
+          {room.latitude && room.longitude && (
+            <div className="mt-8 pb-8 border-b border-primary/10">
+              <h3 className="text-xl font-black uppercase tracking-tight">
+                Vị trí
+              </h3>
+              <p className="mt-2 opacity-80">
+                {[room.address, room.district, room.city].filter(Boolean).join(', ')}
+              </p>
+              <div className="mt-4 h-[400px] rounded-xl overflow-hidden">
+                <Map
+                  lat={room.latitude}
+                  lng={room.longitude}
+                  zoom={15}
+                  address={[room.address, room.district, room.city].filter(Boolean).join(', ')}
+                  roomName={room.name}
+                  showNearby={true}
+                  nearbyTypes={['restaurant', 'atm', 'convenience']}
+                  className="w-full h-full"
+                />
+              </div>
+            </div>
+          )}
+
           {/* Reviews Section */}
           <div className="mt-8">
             <h3 className="text-xl font-black uppercase tracking-tight">
               Đánh giá
             </h3>
-            <div className="flex items-center gap-2 mt-4">
-              <span className="material-symbols-outlined text-2xl text-highlight">star</span>
-              <span className="font-bold text-lg">4.92</span>
-              <span className="opacity-60">(128 đánh giá)</span>
+
+            {/* Rating Summary */}
+            <div className="mt-4">
+              <RatingSummary
+                averageRating={ratingStats.averageRating}
+                totalReviews={ratingStats.totalReviews}
+                distribution={ratingStats.distribution}
+              />
             </div>
-            <div className="mt-6 space-y-6">
-              {/* Sample Review 1 */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 rounded-full size-10 flex items-center justify-center">
-                    <span className="material-symbols-outlined">person</span>
+
+            {/* Reviews List */}
+            {reviews.length > 0 ? (
+              <div className="mt-6 space-y-4">
+                {reviews.map((review: any) => (
+                  <div key={review._id} className="flex flex-col gap-2 p-4 rounded-xl bg-primary/5">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-primary/10 rounded-full size-10 flex items-center justify-center">
+                        <span className="material-symbols-outlined">person</span>
+                      </div>
+                      <div>
+                        <p className="font-bold">
+                          {review.userId?.name || 'Người dùng ẩn danh'}
+                        </p>
+                        <p className="text-sm opacity-60">
+                          {new Date(review.createdAt).toLocaleDateString('vi-VN', {
+                            month: 'long',
+                            year: 'numeric',
+                          })}
+                        </p>
+                      </div>
+                      <div className="ml-auto">
+                        <span className="material-symbols-outlined text-highlight fill-current">
+                          {review.rating >= 1 ? 'star' : 'star_border'}
+                        </span>
+                        <span className="material-symbols-outlined text-highlight fill-current">
+                          {review.rating >= 2 ? 'star' : 'star_border'}
+                        </span>
+                        <span className="material-symbols-outlined text-highlight fill-current">
+                          {review.rating >= 3 ? 'star' : 'star_border'}
+                        </span>
+                        <span className="material-symbols-outlined text-highlight fill-current">
+                          {review.rating >= 4 ? 'star' : 'star_border'}
+                        </span>
+                        <span className="material-symbols-outlined text-highlight fill-current">
+                          {review.rating >= 5 ? 'star' : 'star_border'}
+                        </span>
+                      </div>
+                    </div>
+                    <p className="opacity-80">&quot;{review.comment}&quot;</p>
+                    {review.isVerified && (
+                      <div className="flex items-center gap-1 mt-1">
+                        <span className="material-symbols-outlined text-highlight text-sm">verified</span>
+                        <span className="text-xs font-medium text-highlight">Đã xác nhận đã ở</span>
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <p className="font-bold">Nguyen Van A</p>
-                    <p className="text-sm opacity-60">Tháng 12, 2025</p>
-                  </div>
-                </div>
-                <p className="opacity-80">
-                  &quot;Phòng rất đẹp và sạch sẽ. Chủ nhà rất thân thiện và hỗ trợ nhiệt tình. Sẽ quay lại lần sau!&quot;
-                </p>
+                ))}
               </div>
-              {/* Sample Review 2 */}
-              <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 rounded-full size-10 flex items-center justify-center">
-                    <span className="material-symbols-outlined">person</span>
-                  </div>
-                  <div>
-                    <p className="font-bold">Tran Thi B</p>
-                    <p className="text-sm opacity-60">Tháng 11, 2025</p>
-                  </div>
-                </div>
-                <p className="opacity-80">
-                  &quot;Vị trí tuyệt vời, gần trung tâm. Tiện nghi đầy đủ, giá cả hợp lý.&quot;
-                </p>
+            ) : (
+              <p className="mt-6 text-center opacity-60 p-8">
+                Chưa có đánh giá nào cho phòng này.
+              </p>
+            )}
+
+            {/* Load More Reviews (opens new page with pagination) */}
+            {ratingStats.totalReviews > 5 && (
+              <div className="mt-6 text-center">
+                <a
+                  href={`#reviews`}
+                  className="inline-flex items-center gap-2 text-highlight hover:underline"
+                >
+                  <span>Xem tất cả {ratingStats.totalReviews} đánh giá</span>
+                  <span className="material-symbols-outlined">arrow_forward</span>
+                </a>
               </div>
-            </div>
+            )}
           </div>
         </div>
 

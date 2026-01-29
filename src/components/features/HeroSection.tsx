@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format } from 'date-fns';
+import { vi } from 'date-fns/locale';
 
 const HeroSection = () => {
   const router = useRouter();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
-  const [checkIn, setCheckIn] = useState('');
-  const [checkOut, setCheckOut] = useState('');
-  const [guests, setGuests] = useState('');
+  const [checkIn, setCheckIn] = useState<Date | null>(null);
+  const [checkOut, setCheckOut] = useState<Date | null>(null);
+  const [guests, setGuests] = useState('1');
 
   const heroImages = useMemo(() => [
     'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1920&q=80',
@@ -29,8 +33,8 @@ const HeroSection = () => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (searchQuery) params.set('search', searchQuery);
-    if (checkIn) params.set('checkIn', checkIn);
-    if (checkOut) params.set('checkOut', checkOut);
+    if (checkIn) params.set('checkIn', format(checkIn, 'yyyy-MM-dd'));
+    if (checkOut) params.set('checkOut', format(checkOut, 'yyyy-MM-dd'));
     if (guests) params.set('guests', guests);
     router.push(`/rooms?${params.toString()}`);
   }, [searchQuery, checkIn, checkOut, guests, router]);
@@ -83,32 +87,48 @@ const HeroSection = () => {
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="flex w-full min-w-0 flex-1 resize-none overflow-hidden rounded-r-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action h-full placeholder:text-muted px-4 rounded-l-none border-l-0 text-base font-normal leading-normal"
                       placeholder="Điểm đến, vd: Đà Lạt"
-             />
+                    />
                   </div>
                 </label>
 
                 {/* Date Inputs */}
                 <div className="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 gap-2">
-                  <input
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
-                    className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
-                    placeholder="Check-in"
-           />
-                  <input
-                    type="date"
-                    value={checkOut}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"
-                    placeholder="Check-out"
-                  />
+                  <div className="relative w-full h-14">
+                    <DatePicker
+                      selected={checkIn}
+                      onChange={(date: Date | null) => setCheckIn(date)}
+                      selectsStart
+                      startDate={checkIn}
+                      endDate={checkOut}
+                      minDate={new Date()}
+                      placeholderText="Check-in"
+                      dateFormat="dd/MM/yyyy"
+                      locale={vi}
+                      className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal cursor-pointer"
+                      wrapperClassName="w-full h-full"
+                    />
+                  </div>
+                  <div className="relative w-full h-14">
+                    <DatePicker
+                      selected={checkOut}
+                      onChange={(date: Date | null) => setCheckOut(date)}
+                      selectsEnd
+                      startDate={checkIn}
+                      endDate={checkOut}
+                      minDate={checkIn || new Date()}
+                      placeholderText="Check-out"
+                      dateFormat="dd/MM/yyyy"
+                      locale={vi}
+                      className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal cursor-pointer"
+                      wrapperClassName="w-full h-full"
+                    />
+                  </div>
                 </div>
 
                 {/* Guests Input */}
                 <input
                   type="number"
-      min="1"
+                  min="1"
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
                   className="w-full h-14 rounded-lg text-primary focus:outline-none focus:ring-0 border border-primary/20 bg-white focus:border-action placeholder:text-muted px-4 text-base font-normal leading-normal"

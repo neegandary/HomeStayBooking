@@ -30,6 +30,12 @@ const VIBE_OPTIONS = [
  * - Regenerate functionality
  */
 export default function AIItinerary({ roomName, city }: AIItineraryProps) {
+  // Using props for future room-specific customization
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _roomName = roomName;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _city = city;
+
   const [input, setInput] = useState<ItineraryInput>({
     guestName: '',
     stayDuration: 2,

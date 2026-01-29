@@ -25,6 +25,11 @@ export default function RoomModal({
     capacity: 1,
     amenities: [],
     images: ['https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop'],
+    address: '',
+    city: '',
+    district: '',
+    latitude: undefined,
+    longitude: undefined,
   });
 
   useEffect(() => {
@@ -38,6 +43,11 @@ export default function RoomModal({
         capacity: 1,
         amenities: [],
         images: ['https://images.unsplash.com/photo-1513694203232-719a280e022f?q=80&w=2069&auto=format&fit=crop'],
+        address: '',
+        city: '',
+        district: '',
+        latitude: undefined,
+        longitude: undefined,
       });
     }
   }, [room, isOpen]);
@@ -166,6 +176,85 @@ export default function RoomModal({
                     {amenity}
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Location Section */}
+          <div className="pt-6 border-t border-primary/5">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-primary mb-4">
+              Vị trí
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* City */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 ml-1">
+                  Thành phố
+                </label>
+                <input
+                  type="text"
+                  value={formData.city || ''}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full px-5 py-3 rounded-2xl border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-primary"
+                  placeholder="e.g., Đà Nẵng"
+                />
+              </div>
+
+              {/* District */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 ml-1">
+                  Quận/Huyện
+                </label>
+                <input
+                  type="text"
+                  value={formData.district || ''}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  className="w-full px-5 py-3 rounded-2xl border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-primary"
+                  placeholder="e.g., Sơn Trà"
+                />
+              </div>
+
+              {/* Address */}
+              <div className="md:col-span-2 space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 ml-1">
+                  Địa chỉ chi tiết
+                </label>
+                <input
+                  type="text"
+                  value={formData.address || ''}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="w-full px-5 py-3 rounded-2xl border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-primary"
+                  placeholder="e.g., 123 Nguyễn Văn Linh, Phước Mỹ"
+                />
+              </div>
+
+              {/* Coordinates */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 ml-1">
+                  Vĩ độ (Latitude)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={formData.latitude || ''}
+                  onChange={(e) => setFormData({ ...formData, latitude: e.target.value ? Number(e.target.value) : undefined })}
+                  className="w-full px-5 py-3 rounded-2xl border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-primary"
+                  placeholder="16.0544"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-[10px] font-black uppercase tracking-widest text-primary/40 ml-1">
+                  Kinh độ (Longitude)
+                </label>
+                <input
+                  type="number"
+                  step="any"
+                  value={formData.longitude || ''}
+                  onChange={(e) => setFormData({ ...formData, longitude: e.target.value ? Number(e.target.value) : undefined })}
+                  className="w-full px-5 py-3 rounded-2xl border border-primary/10 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all font-bold text-primary"
+                  placeholder="108.2022"
+                />
               </div>
             </div>
           </div>

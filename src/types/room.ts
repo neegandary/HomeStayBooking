@@ -8,6 +8,12 @@ export interface Room {
   capacity: number;
   amenities: string[];
   available: boolean;
+  // Location fields
+  address?: string;
+  city?: string;
+  district?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface RoomFilter {
