@@ -36,6 +36,8 @@ export interface ItineraryResponse {
   intro: string;
   /** Array of daily itineraries */
   days: ItineraryDay[];
+  /** Closing message (optional) */
+  outro?: string;
 }
 
 /**
@@ -48,6 +50,8 @@ export interface ItineraryInput {
   stayDuration: number;
   /** Travel vibe/preference */
   vibe: 'relaxing' | 'adventurous' | 'romantic' | 'foodie' | 'nature' | 'mixed';
+  /** Location/homestay address for itinerary optimization */
+  location?: string;
 }
 
 /**

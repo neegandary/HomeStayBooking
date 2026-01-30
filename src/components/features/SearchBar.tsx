@@ -41,7 +41,7 @@ const SearchBar = () => {
         }
       }
     }
-  }, []);
+  }, [searchParams]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

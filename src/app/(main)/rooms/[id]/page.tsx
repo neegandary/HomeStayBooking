@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import connectDB from '@/lib/db/mongodb';
 import Room from '@/models/Room';
 import BookingSidebar from '@/components/features/BookingSidebar';
-import { RatingSummary, ReviewList } from '@/components/reviews';
+import { RatingSummary } from '@/components/reviews';
 import { Map } from '@/components/map';
 
 interface RoomDetailPageProps {

@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Html5QrcodeScanner, Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { useAuth } from '@/hooks/useAuth';
 import { Booking } from '@/types/booking';
 
 // Extended booking type with populated room data from API
@@ -211,7 +210,7 @@ export default function AdminCheckinPage() {
     <div className="flex flex-col h-full">
       {/* Page Content */}
       <div className="flex-1 p-8 overflow-y-auto">
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 h-full">
+        <div className="grid grid-cols-1 lg:grid-cols-1 gap-8 h-full">
           {/* QR Scanner Module */}
           <div className="lg:col-span-3 flex flex-col bg-white p-6 rounded-xl border border-slate-200">
             <h1 className="text-slate-900 tracking-tight text-2xl font-bold leading-tight mb-2">
@@ -298,111 +297,7 @@ export default function AdminCheckinPage() {
                 )}
               </div>
             )}
-
-            {scanResult && !checkinResult && (
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-full max-w-md">
-                  <div className="bg-slate-50 rounded-xl p-6 space-y-4 mb-6">
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-slate-500">Booking ID</p>
-                      <p className="text-sm font-semibold text-slate-900">#{scanResult.bookingId.slice(-8).toUpperCase()}</p>
-                    </div>
-                    {scanResult.guestName && (
-                      <div className="flex justify-between items-center">
-                        <p className="text-sm font-medium text-slate-500">Guest</p>
-                        <p className="text-sm font-semibold text-slate-900">{scanResult.guestName}</p>
-                      </div>
-                    )}
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-slate-500">Check-in</p>
-                      <p className="text-sm font-semibold text-slate-900">{formatDate(scanResult.checkIn)}</p>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-slate-500">Check-out</p>
-                      <p className="text-sm font-semibold text-slate-900">{formatDate(scanResult.checkOut)}</p>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-sm font-medium text-slate-500">Guests</p>
-                      <p className="text-sm font-semibold text-slate-900">{scanResult.guests}</p>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <button
-                      onClick={handleCheckin}
-                      disabled={isProcessing}
-                      className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center disabled:opacity-50"
-                    >
-                      {isProcessing ? 'Processing...' : 'Confirm Check-in'}
-                    </button>
-                    <button
-                      onClick={handleReset}
-                      className="w-full text-slate-600 bg-transparent hover:bg-slate-100 border border-slate-200 font-medium rounded-lg text-sm px-5 py-3 text-center"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {checkinResult && (
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="w-full max-w-md text-center">
-                  {checkinResult.valid ? (
-                    <>
-                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Check-in Successful!</h2>
-                      <p className="text-slate-600 mb-6">{checkinResult.message}</p>
-                      {checkinResult.booking && (
-                        <div className="bg-green-50 rounded-xl p-6 text-left space-y-3 mb-6 border border-green-200">
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm font-medium text-slate-500">Guest</p>
-                            <p className="text-sm font-semibold text-slate-900">{checkinResult.booking.guestName}</p>
-                          </div>
-                          {checkinResult.booking.roomName && (
-                            <div className="flex justify-between items-center">
-                              <p className="text-sm font-medium text-slate-500">Room</p>
-                              <p className="text-sm font-semibold text-slate-900">{checkinResult.booking.roomName}</p>
-                            </div>
-                          )}
-                          <div className="flex justify-between items-center">
-                            <p className="text-sm font-medium text-slate-500">Status</p>
-                            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 capitalize">
-                              {checkinResult.booking.status}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      <button
-                        onClick={handleReset}
-                        className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center"
-                      >
-                        Scan Next Guest
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <span className="material-symbols-outlined text-red-600 text-4xl">cancel</span>
-                      </div>
-                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Check-in Failed</h2>
-                      <p className="text-red-600 mb-6">{checkinResult.error}</p>
-                      <button
-                        onClick={handleReset}
-                        className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center"
-                      >
-                        Try Again
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Booking Details Card */}
+            {/* Booking Details Card */}
           <div className="lg:col-span-2 flex flex-col bg-white p-6 rounded-xl border border-slate-200">
             {!scanResult && !checkinResult ? (
               <div className="flex flex-col items-center justify-center text-center h-full text-slate-500">
@@ -621,6 +516,90 @@ export default function AdminCheckinPage() {
               </div>
             )}
           </div>
+
+            {scanResult && !checkinResult && (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="w-full max-w-md">
+                  
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={handleCheckin}
+                      disabled={isProcessing}
+                      className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center disabled:opacity-50 mt-4!"
+                    >
+                      {isProcessing ? 'Processing...' : 'Confirm Check-in'}
+                    </button>
+                    <button
+                      onClick={handleReset}
+                      className="w-full text-slate-600 bg-transparent hover:bg-slate-100 border border-slate-200 font-medium rounded-lg text-sm px-5 py-3 text-center"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {checkinResult && (
+              <div className="flex-1 flex flex-col items-center justify-center">
+                <div className="w-full max-w-md text-center">
+                  {checkinResult.valid ? (
+                    <>
+                      <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 mt-5!">
+                        <span className="material-symbols-outlined text-green-600 text-4xl">check_circle</span>
+                      </div>
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Check-in Successful!</h2>
+                      <p className="text-slate-600 mb-6">{checkinResult.message}</p>
+                      {checkinResult.booking && (
+                        <div className="bg-green-50 rounded-xl p-6 text-left space-y-3 mb-6 border border-green-200">
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-medium text-slate-500">Guest</p>
+                            <p className="text-sm font-semibold text-slate-900">{checkinResult.booking.guestName}</p>
+                          </div>
+                          {checkinResult.booking.roomName && (
+                            <div className="flex justify-between items-center">
+                              <p className="text-sm font-medium text-slate-500">Room</p>
+                              <p className="text-sm font-semibold text-slate-900">{checkinResult.booking.roomName}</p>
+                            </div>
+                          )}
+                          <div className="flex justify-between items-center">
+                            <p className="text-sm font-medium text-slate-500">Status</p>
+                            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-700 capitalize">
+                              {checkinResult.booking.status}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <button
+                        onClick={handleReset}
+                        className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center"
+                      >
+                        Scan Next Guest
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span className="material-symbols-outlined text-red-600 text-4xl">cancel</span>
+                      </div>
+                      <h2 className="text-2xl font-bold text-slate-900 mb-2">Check-in Failed</h2>
+                      <p className="text-red-600 mb-6">{checkinResult.error}</p>
+                      <button
+                        onClick={handleReset}
+                        className="w-full text-white bg-primary hover:bg-primary/90 font-medium rounded-lg text-sm px-5 py-3 text-center"
+                      >
+                        Try Again
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+            
+          
+          </div>
+
+          
         </div>
       </div>
     </div>

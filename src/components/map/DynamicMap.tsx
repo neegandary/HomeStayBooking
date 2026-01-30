@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import dynamic from 'next/dynamic';
-import { MapSkeleton } from './MapSkeleton';
+import MapSkeleton from './MapSkeleton';
 
 interface DynamicMapProps {
   lat: number;

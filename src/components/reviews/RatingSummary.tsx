@@ -1,4 +1,3 @@
-import StarRating from './StarRating';
 
 interface RatingDistribution {
   1: number;

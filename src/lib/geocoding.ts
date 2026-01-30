@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Geocoding Service
  * Converts Vietnamese addresses to latitude/longitude using Nominatim (OpenStreetMap)
@@ -6,7 +7,6 @@
  * This service includes caching to respect rate limits.
  */
 
-import mongoose from 'mongoose';
 
 // Vietnam bounds for validation
 const VIETNAM_BOUNDS = {

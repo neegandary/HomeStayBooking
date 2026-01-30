@@ -1,9 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import api from '@/lib/axios';
+import { useAuth } from '@/hooks/useAuth';
 import { AIItineraryProps, ItineraryInput, ItineraryResponse } from '@/types/itinerary';
 import AIItinerarySkeleton from './AIItinerarySkeleton';
+
+const STORAGE_KEY = 'stayeasy_itinerary_session';
 
 /**
  * Vibe options for travel style selection
@@ -29,21 +32,47 @@ const VIBE_OPTIONS = [
  * - Error state with retry option
  * - Regenerate functionality
  */
-export default function AIItinerary({ roomName, city }: AIItineraryProps) {
-  // Using props for future room-specific customization
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _roomName = roomName;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const _city = city;
-
-  const [input, setInput] = useState<ItineraryInput>({
-    guestName: '',
+export default function AIItinerary({  city }: AIItineraryProps) {
+  const { user } = useAuth();
+  const [input, setInput] = useState<Omit<ItineraryInput, 'guestName'>>({
     stayDuration: 2,
     vibe: 'mixed',
   });
   const [itinerary, setItinerary] = useState<ItineraryResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  // Restore state from sessionStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        try {
+          const data = JSON.parse(stored);
+          if (data.input) setInput(data.input);
+          if (data.itinerary) setItinerary(data.itinerary);
+          if (data.saved) setSaved(data.saved);
+        } catch (e) {
+          console.error('Failed to restore itinerary state:', e);
+        }
+      }
+      setIsHydrated(true);
+    }
+  }, []);
+
+  // Persist state to sessionStorage when itinerary changes
+  useEffect(() => {
+    if (isHydrated && typeof window !== 'undefined') {
+      if (itinerary) {
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ input, itinerary, saved }));
+      } else {
+        sessionStorage.removeItem(STORAGE_KEY);
+      }
+    }
+  }, [itinerary, input, saved, isHydrated]);
 
   /**
    * Handles itinerary generation form submission
@@ -54,7 +83,11 @@ export default function AIItinerary({ roomName, city }: AIItineraryProps) {
     setError(null);
 
     try {
-      const { data } = await api.post('/itinerary', input);
+      const { data } = await api.post('/itinerary', {
+        ...input,
+        guestName: user?.name || 'Khách',
+        location: city || 'Đà Lạt',
+      });
       setItinerary(data.itinerary);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Có lỗi xảy ra';
@@ -70,10 +103,34 @@ export default function AIItinerary({ roomName, city }: AIItineraryProps) {
   const handleRetry = () => {
     setError(null);
     setItinerary(null);
+    setSaved(false);
+    sessionStorage.removeItem(STORAGE_KEY);
   };
 
-  // Loading state - show skeleton
-  if (loading) {
+  /**
+   * Saves the current itinerary to database
+   */
+  const handleSave = async () => {
+    if (!itinerary || saved) return;
+
+    setSaving(true);
+    try {
+      await api.post('/itinerary/saved', {
+        ...input,
+        guestName: user?.name || 'Khách',
+        location: city || 'Đà Lạt',
+        itinerary,
+      });
+      setSaved(true);
+    } catch (err) {
+      console.error('Save error:', err);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Loading/hydrating state - show skeleton
+  if (loading || !isHydrated) {
     return (
       <div className="bg-white rounded-2xl shadow-lg shadow-primary/5 p-6">
         <AIItinerarySkeleton />
@@ -151,11 +208,35 @@ export default function AIItinerary({ roomName, city }: AIItineraryProps) {
           ))}
         </div>
 
-        {/* Regenerate button */}
-        <div className="mt-8 text-center">
+        {/* Outro */}
+        {itinerary.outro && (
+          <div className="mt-8 p-4 bg-primary/5 rounded-xl text-center">
+            <p className="text-sm text-primary/70 italic">{itinerary.outro}</p>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+          {/* Save button */}
           <button
-            onClick={() => setItinerary(null)}
-            className="px-6 py-3 bg-primary/5 text-primary rounded-xl hover:bg-primary/10 transition-colors font-medium inline-flex items-center gap-2"
+            onClick={handleSave}
+            disabled={saving || saved}
+            className={`px-6 py-3 rounded-xl font-medium inline-flex items-center justify-center gap-2 transition-colors ${
+              saved
+                ? 'bg-green-100 text-green-700'
+                : 'bg-primary text-white hover:bg-primary/90'
+            } disabled:opacity-70`}
+          >
+            <span className="material-symbols-outlined">
+              {saved ? 'check_circle' : saving ? 'hourglass_empty' : 'bookmark'}
+            </span>
+            {saved ? 'Đã lưu' : saving ? 'Đang lưu...' : 'Lưu lịch trình'}
+          </button>
+
+          {/* Regenerate button */}
+          <button
+            onClick={handleRetry}
+            className="px-6 py-3 bg-primary/5 text-primary rounded-xl hover:bg-primary/10 transition-colors font-medium inline-flex items-center justify-center gap-2"
           >
             <span className="material-symbols-outlined">refresh</span>
             Tạo lịch trình mới
@@ -174,21 +255,13 @@ export default function AIItinerary({ roomName, city }: AIItineraryProps) {
         <p className="text-sm text-gray-500">Để AI tạo lịch trình hoàn hảo cho bạn</p>
       </div>
 
-      <form onSubmit={handleGenerate} className="space-y-5">
-        {/* Guest name input */}
-        <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-2">
-            Tên của bạn
-          </label>
-          <input
-            type="text"
-            required
-            value={input.guestName}
-            onChange={(e) => setInput({ ...input, guestName: e.target.value })}
-            className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-primary focus:ring-2 focus:ring-primary/10 outline-none transition-all"
-            placeholder="Nhập tên của bạn..."
-          />
-        </div>
+      <div className="space-y-5">
+        {/* User greeting */}
+        {user?.name && (
+          <div className="text-center text-sm text-gray-600">
+            Xin chào, <span className="font-semibold text-primary">{user.name}</span>!
+          </div>
+        )}
 
         {/* Stay duration slider */}
         <div>
@@ -236,13 +309,14 @@ export default function AIItinerary({ roomName, city }: AIItineraryProps) {
 
         {/* Submit button */}
         <button
-          type="submit"
+          type="button"
+          onClick={handleGenerate}
           disabled={loading}
           className="w-full py-4 bg-primary text-white rounded-xl font-bold uppercase tracking-wider hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? 'Đang tạo...' : 'Tạo lịch trình'}
         </button>
-      </form>
+      </div>
     </div>
   );
 }

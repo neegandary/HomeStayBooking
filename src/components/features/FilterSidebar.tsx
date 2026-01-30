@@ -35,7 +35,6 @@ const FilterSidebar: React.FC<FilterSidebarProps> = ({ className = '' }) => {
   const searchParams = useShallowSearchParams();
 
   const currentPrice = searchParams.get('maxPrice') || '20000000';
-  const selectedAmenities: string[] = searchParams.getAll('amenities');
   const currentCapacity = searchParams.get('guests') || '';
 
   // Shallow navigation - update URL without full page reload

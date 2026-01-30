@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { withAuth, isAuthenticated } from '@/lib/auth/middleware';
@@ -12,16 +13,39 @@ import { ITINERARY_SYSTEM_PROMPT } from '@/lib/itinerary-prompt';
  * Requires JWT authentication
  */
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// Lazy initialization to handle missing API key gracefully
+let genAI: GoogleGenerativeAI | null = null;
+
+function getGenAI(): GoogleGenerativeAI {
+  if (!genAI) {
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('GEMINI_API_KEY not configured');
+    }
+    genAI = new GoogleGenerativeAI(apiKey);
+  }
+  return genAI;
+}
+
+/**
+ * Input validation interface
+ */
+interface ItineraryValidation {
+  guestName?: string;
+  stayDuration?: number;
+  vibe?: string;
+  location?: string;
+}
 
 /**
  * Validates the itinerary input parameters
  */
-function validateInput(body: unknown): { guestName?: string; stayDuration?: number; vibe?: string } {
-  const { guestName, stayDuration, vibe } = body as {
+function validateInput(body: unknown): ItineraryValidation {
+  const { guestName, stayDuration, vibe, location } = body as {
     guestName?: unknown;
     stayDuration?: unknown;
     vibe?: unknown;
+    location?: unknown;
   };
 
   if (!guestName || typeof guestName !== 'string' || guestName.trim().length === 0) {
@@ -41,7 +65,41 @@ function validateInput(body: unknown): { guestName?: string; stayDuration?: numb
     return { vibe: undefined };
   }
 
-  return { guestName, stayDuration, vibe };
+  // Location is optional, default to 'Đà Lạt'
+  const validLocation = typeof location === 'string' && location.trim().length > 0 
+    ? location.trim() 
+    : 'Đà Lạt';
+
+  return { guestName, stayDuration, vibe, location: validLocation };
+}
+
+/**
+ * Activity structure for itinerary
+ */
+interface Activity {
+  time: string;
+  task: string;
+  desc: string;
+  tip?: string;
+  pro_tip?: string;
+}
+
+/**
+ * Day structure for itinerary
+ */
+interface ItineraryDay {
+  day: number;
+  theme: string;
+  activities: Activity[];
+}
+
+/**
+ * Itinerary response structure
+ */
+interface ItineraryResponse {
+  intro: string;
+  days: ItineraryDay[];
+  outro?: string;
 }
 
 /**
@@ -50,63 +108,71 @@ function validateInput(body: unknown): { guestName?: string; stayDuration?: numb
 async function generateItinerary(
   guestName: string,
   stayDuration: number,
-  vibe: string
-): Promise<{ intro: string; days: Array<{ day: number; theme: string; activities: Array<{ time: string; task: string; desc: string; pro_tip: string }> }> }> {
-  const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash',
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 2048,
-      responseMimeType: 'application/json',
-    },
-  });
+  vibe: string,
+  location: string
+): Promise<ItineraryResponse> {
+  // Allow model override via environment variable
+  // gemini-2.5-flash is the recommended stable model (gemini-pro deprecated)
+  const modelName = process.env.GEMINI_MODEL || 'gemini-2.5-flash';
+  const model = getGenAI().getGenerativeModel({ model: modelName });
 
   const userPrompt = `Tạo lịch trình du lịch Đà Lạt cho khách:
+    Tên khách: ${guestName}
+    Vị trí Homestay: ${location}
+    Số ngày ở: ${stayDuration} ngày
+    Vibe: ${vibe}`;
 
-Tên khách: ${guestName}
-Số ngày ở: ${stayDuration} ngày
-Vibe: ${vibe}
+  // Gộp System Prompt và User Prompt làm một để tránh lỗi
+  const finalPrompt = `${ITINERARY_SYSTEM_PROMPT}\n\n${userPrompt}`;
 
-Hãy trả về JSON theo định dạng sau (KHÔNG có markdown code block):
+  // Use simplified API pattern
+  const result = await model.generateContent(finalPrompt);
+  let text = result.response.text();
 
-{
-  "intro": "Lời chào thân thiện bằng tiếng Việt, giới thiệu về hành trình",
-  "days": [
-    {
-      "day": 1,
-      "theme": "Chủ đề của ngày (ví dụ: Khám phá thiên nhiên)",
-      "activities": [
-        {
-          "time": "08:00",
-          "task": "Tên hoạt động",
-          "desc": "Mô tả chi tiết hoạt động",
-          "pro_tip": "Mẹo từ người địa phương"
+  // Strip markdown code blocks if present (```json ... ```)
+  text = text.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '').trim();
+
+  try {
+    const itinerary = JSON.parse(text) as ItineraryResponse;
+
+    // Helper function to replace {guestName} placeholder in any text
+    const replaceGuestName = (str: string | undefined): string | undefined => {
+      if (!str) return str;
+      return str.replace(/\{guestName\}/gi, guestName);
+    };
+
+    // Replace {guestName} in intro/outro
+    itinerary.intro = replaceGuestName(itinerary.intro) || '';
+    itinerary.outro = replaceGuestName(itinerary.outro);
+
+    // Process days and activities
+    if (itinerary.days) {
+      itinerary.days.forEach((day) => {
+        // Replace in day theme
+        day.theme = replaceGuestName(day.theme) || day.theme;
+
+        if (day.activities) {
+          day.activities.forEach((activity) => {
+            // Replace in activity fields
+            activity.task = replaceGuestName(activity.task) || activity.task;
+            activity.desc = replaceGuestName(activity.desc) || activity.desc;
+            activity.tip = replaceGuestName(activity.tip);
+            activity.pro_tip = replaceGuestName(activity.pro_tip);
+
+            // Normalize: convert 'tip' to 'pro_tip' for consistency
+            if (activity.tip && !activity.pro_tip) {
+              activity.pro_tip = activity.tip;
+              delete activity.tip;
+            }
+          });
         }
-      ]
+      });
     }
-  ]
-}
-
-Chỉ trả về JSON, không có gì khác.`;
-
-  const result = await model.generateContent({
-    contents: [
-      { role: 'user', parts: [{ text: ITINERARY_SYSTEM_PROMPT }] },
-      { role: 'user', parts: [{ text: userPrompt }] },
-    ],
-  });
-
-  const response = await result.response;
-  const text = response.text();
-
-  // Parse and validate JSON structure
-  const itinerary = JSON.parse(text);
-
-  if (!itinerary.intro || !Array.isArray(itinerary.days)) {
-    throw new Error('Invalid response structure from AI');
+    return itinerary;
+  } catch (e) {
+    console.error("JSON Parse Error:", text);
+    throw new Error('AI trả về định dạng không hợp lệ');
   }
-
-  return itinerary;
 }
 
 export async function POST(request: NextRequest) {
@@ -146,7 +212,8 @@ export async function POST(request: NextRequest) {
     const itinerary = await generateItinerary(
       validation.guestName,
       validation.stayDuration,
-      validation.vibe
+      validation.vibe,
+      validation.location || 'Đà Lạt'
     );
 
     // Step 4: Return successful response

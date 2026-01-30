@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import ReviewCard from './ReviewCard';
-import StarRating from './StarRating';
 
 interface ReviewListProps {
   /** Room ID to fetch reviews for */

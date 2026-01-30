@@ -7,6 +7,7 @@ import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { format, differenceInDays } from 'date-fns';
 import { vi } from 'date-fns/locale';
+import { Map } from '@/components/map';
 
 const SEARCH_PARAMS_KEY = 'stayeasy_search_params';
 
@@ -17,6 +18,11 @@ interface BookingSidebarProps {
     name: string;
     price: number;
     capacity: number;
+    latitude?: number;
+    longitude?: number;
+    address?: string;
+    district?: string;
+    city?: string;
   };
 }
 
@@ -277,6 +283,36 @@ export default function BookingSidebar({ room }: BookingSidebarProps) {
           <span>Tổng cộng</span>
           <span>{total.toLocaleString('vi-VN')}đ</span>
         </div>
+
+        {/* Mini Map */}
+        {room.latitude && room.longitude && (
+          <div className="mt-6 pt-4 border-t border-primary/10">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="material-symbols-outlined text-lg opacity-60">location_on</span>
+              <span className="text-sm font-bold">Vị trí</span>
+            </div>
+            <div className="h-[120px] rounded-lg overflow-hidden">
+              <Map
+                lat={room.latitude}
+                lng={room.longitude}
+                zoom={14}
+                address={[room.address, room.district, room.city].filter(Boolean).join(', ')}
+                roomName={room.name}
+                showNearby={false}
+                className="w-full h-full"
+              />
+            </div>
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${room.latitude},${room.longitude}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 flex items-center justify-center gap-2 text-sm font-medium text-action hover:underline"
+            >
+              <span className="material-symbols-outlined text-base">directions</span>
+              Chỉ đường
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
